@@ -326,17 +326,18 @@ class TestShakki(unittest.TestCase):
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0]])
-        self.assertEqual(self.peli.check_move_legality(3,3,-1,1), False)
+        self.assertEqual(self.peli.preview_move(3,3,-1,1), False)
+
     def test_king_move_into_check_by_bishop_white(self):
         self.peli.set_board([[0,0,0,0,-7,0,0,0],
-                [0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0],
-                [0,0,0,7,0,-4,0,0],
-                [0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0],
-                [0,0,0,0,0,0,0,0]])
-        self.assertEqual(self.peli.check_move_legality(3,3,-1,1), False)
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,7,0,-4,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0]])
+        self.assertEqual(self.peli.preview_move(3,3,-1,1), False)
     
     def test_king_move_into_check_by_rook_white(self):
         self.peli.set_board([[0,0,0,0,-7,0,0,0],
@@ -347,7 +348,7 @@ class TestShakki(unittest.TestCase):
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0]])
-        self.assertEqual(self.peli.check_move_legality(3,3,-1,1), False)
+        self.assertEqual(self.peli.preview_move(3,3,-1,1), False)
     
     def test_king_move_into_check_by_queen_white(self):
         self.peli.set_board([[0,0,0,0,-7,0,0,0],
@@ -358,8 +359,8 @@ class TestShakki(unittest.TestCase):
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0]])
-        self.assertEqual(self.peli.check_move_legality(3,3,-1,1), False)
-        self.assertEqual(self.peli.check_move_legality(3,3,1,1), False)
+        self.assertEqual(self.peli.preview_move(3,3,-1,1), False)
+        self.assertEqual(self.peli.preview_move(3,3,1,1), False)
     
     def test_square_threatened_queen_white(self):
         self.peli.set_board([[0,0,0,0,-7,0,0,0],
@@ -370,9 +371,9 @@ class TestShakki(unittest.TestCase):
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0],
                 [0,0,7,0,0,0,0,0]])
-        self.assertEqual(self.peli.square_threatened(0,3), True)
-        self.assertEqual(self.peli.square_threatened(4,4), True)
-        self.assertEqual(self.peli.square_threatened(0,7), False)
+        self.assertEqual(self.peli.square_threatened(0,3,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(4,4,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(0,7,self.peli.lauta), False)
 
     def test_square_threatened_pawn_white(self):
         self.peli.set_board([[0,0,0,0,-7,0,0,0],
@@ -383,9 +384,9 @@ class TestShakki(unittest.TestCase):
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0],
                 [0,0,7,0,0,0,0,0]])
-        self.assertEqual(self.peli.square_threatened(4,2), True)
-        self.assertEqual(self.peli.square_threatened(4,4), True)
-        self.assertEqual(self.peli.square_threatened(4,3), False)
+        self.assertEqual(self.peli.square_threatened(4,2,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(4,4,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(4,3,self.peli.lauta), False)
 
     def test_square_threatened_knight_white(self):
         self.peli.set_board([[0,0,0,0,-7,0,0,0],
@@ -396,14 +397,14 @@ class TestShakki(unittest.TestCase):
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0],
                 [0,0,7,0,0,0,0,0]])
-        self.assertEqual(self.peli.square_threatened(1,2), True)
-        self.assertEqual(self.peli.square_threatened(1,4), True)
-        self.assertEqual(self.peli.square_threatened(4,1), True)
-        self.assertEqual(self.peli.square_threatened(2,1), True)
-        self.assertEqual(self.peli.square_threatened(4,5), True)
-        self.assertEqual(self.peli.square_threatened(5,4), True)
-        self.assertEqual(self.peli.square_threatened(5,2), True)
-        self.assertEqual(self.peli.square_threatened(2,5), True)
+        self.assertEqual(self.peli.square_threatened(1,2,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(1,4,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(4,1,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(2,1,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(4,5,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(5,4,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(5,2,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(2,5,self.peli.lauta), True)
 
     #king black
     def test_king_move_emptyish_board_black(self):
@@ -459,7 +460,8 @@ class TestShakki(unittest.TestCase):
                 [0,0,1,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0]])
-        self.assertEqual(self.peli.check_move_legality(3,3,1,0), False)
+        self.assertEqual(self.peli.preview_move(3,3,1,0), False)
+
     def test_king_move_into_check_by_bishop_black(self):
         self.peli.change_mover()
         self.peli.set_board([[0,0,0,0,7,0,0,0],
@@ -470,7 +472,7 @@ class TestShakki(unittest.TestCase):
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0]])
-        self.assertEqual(self.peli.check_move_legality(3,3,-1,1), False)
+        self.assertEqual(self.peli.preview_move(3,3,-1,1), False)
     
     def test_king_move_into_check_by_rook_black(self):
         self.peli.change_mover()
@@ -482,7 +484,7 @@ class TestShakki(unittest.TestCase):
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0]])
-        self.assertEqual(self.peli.check_move_legality(3,3,-1,1), False)
+        self.assertEqual(self.peli.preview_move(3,3,-1,1), False)
     
     def test_king_move_into_check_by_queen_black(self):
         self.peli.change_mover()
@@ -494,8 +496,8 @@ class TestShakki(unittest.TestCase):
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0]])
-        self.assertEqual(self.peli.check_move_legality(3,3,-1,1), False)
-        self.assertEqual(self.peli.check_move_legality(3,3,1,1), False)
+        self.assertEqual(self.peli.preview_move(3,3,-1,1), False)
+        self.assertEqual(self.peli.preview_move(3,3,1,1), False)
     
     #king_threatened function testing
     def test_king_threatened_pawn_black(self):
@@ -586,7 +588,6 @@ class TestShakki(unittest.TestCase):
                             [0,0,0,0,0,0,0,0],
                             [0,5,0,0,0,0,0,0],
                             [0,0,0,0,0,0,0,0]])
-        print(self.peli.preview_move(4,1,0,2))
         self.assertEqual(self.peli.preview_move(4,1,0,2), False)
         self.assertEqual(self.peli.preview_move(4,1,0,-1), False)
 
@@ -600,9 +601,9 @@ class TestShakki(unittest.TestCase):
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0],
                 [0,0,-7,0,0,0,0,0]])
-        self.assertEqual(self.peli.square_threatened(0,3), True)
-        self.assertEqual(self.peli.square_threatened(4,4), True)
-        self.assertEqual(self.peli.square_threatened(0,7), False)
+        self.assertEqual(self.peli.square_threatened(0,3,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(4,4,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(0,7,self.peli.lauta), False)
 
 
     def test_square_threatened_pawn_black(self):
@@ -615,9 +616,9 @@ class TestShakki(unittest.TestCase):
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0],
                 [0,0,-7,0,0,0,0,0]])
-        self.assertEqual(self.peli.square_threatened(2,2), True)
-        self.assertEqual(self.peli.square_threatened(2,4), True)
-        self.assertEqual(self.peli.square_threatened(2,3), False)
+        self.assertEqual(self.peli.square_threatened(2,2,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(2,4,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(2,3,self.peli.lauta), False)
 
     def test_square_threatened_knight_black(self):
         self.peli.change_mover()
@@ -629,14 +630,14 @@ class TestShakki(unittest.TestCase):
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0],
                 [0,0,-7,0,0,0,0,0]])
-        self.assertEqual(self.peli.square_threatened(1,2), True)
-        self.assertEqual(self.peli.square_threatened(1,4), True)
-        self.assertEqual(self.peli.square_threatened(4,1), True)
-        self.assertEqual(self.peli.square_threatened(2,1), True)
-        self.assertEqual(self.peli.square_threatened(4,5), True)
-        self.assertEqual(self.peli.square_threatened(5,4), True)
-        self.assertEqual(self.peli.square_threatened(5,2), True)
-        self.assertEqual(self.peli.square_threatened(2,5), True)
+        self.assertEqual(self.peli.square_threatened(1,2,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(1,4,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(4,1,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(2,1,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(4,5,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(5,4,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(5,2,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(2,5,self.peli.lauta), True)
     
     def test_black_queen_take_white_queen(self):
         self.peli.set_board([[0,0,0,0,7,0,0,0],
@@ -648,4 +649,10 @@ class TestShakki(unittest.TestCase):
                 [0,0,0,0,0,0,0,0],
                 [0,0,-7,0,0,0,0,0]])
         self.assertEqual(self.peli.check_move_legality(1,2,2,-2), True)
-        
+    
+    def test_for_having_no_moves_white(self):
+        self.assertEqual(self.peli.check_for_having_no_moves(),False)
+
+    def test_for_having_no_moves_black(self):
+        self.peli.change_mover()
+        self.assertEqual(self.peli.check_for_having_no_moves(),False)

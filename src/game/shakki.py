@@ -11,7 +11,8 @@ class Shakki:
                       [1,1,1,1,1,1,1,1],
                       [5,3,4,6,7,4,3,5]]
         self.whitetomove = True
-    
+        self.gamestatus = 0
+
     def set_board(self, lauta):
         self.lauta = lauta
 
@@ -137,12 +138,12 @@ class Shakki:
     def move_like_king(self, x,y,dx,dy):
         if self.whitetomove:
             if abs(dx) <= 1 and abs(dy) <= 1:
-                if self.choose_square(x+dx,y+dy) <= 0 and not self.square_threatened(x+dx,y+dy):
+                if self.choose_square(x+dx,y+dy) <= 0:
                     return True
             return False
         else:
             if abs(dx) <= 1 and abs(dy) <= 1:
-                if self.choose_square(x+dx,y+dy) >= 0 and not self.square_threatened(x+dx,y+dy):
+                if self.choose_square(x+dx,y+dy) >= 0:
                     return True
             return False
 
@@ -172,92 +173,92 @@ class Shakki:
                 return self.move_like_king(x,y,dx,dy)
         return False
 
-    def square_threatened(self, x, y):
+    def square_threatened(self, x, y, board):
         n = len(self.lauta)
         if self.whitetomove:
             colormod = -1
             anticmod = 1
             #check for pawns
-            if self.choose_square(x-1,y-1) == colormod*1 or self.choose_square(x-1,y+1) == colormod*1:
+            if self.choose_square_diff_board(x-1,y-1,board) == colormod*1 or self.choose_square_diff_board(x-1,y+1,board) == colormod*1:
                 return True
         else:
             colormod = 1
             anticmod = -1
             #check for pawns
-            if self.choose_square(x+1,y-1) == colormod*1 or self.choose_square(x+1,y+1) == colormod*1:
+            if self.choose_square_diff_board(x+1,y-1,board) == colormod*1 or self.choose_square_diff_board(x+1,y+1,board) == colormod*1:
                 return True
         #check for knights
-        if self.choose_square(x-2,y-1) == colormod*3 or self.choose_square(x-2,y+1) == colormod*3 \
-        or  self.choose_square(x-1,y-2) == colormod*3 or self.choose_square(x-1,y+2) == colormod*3 \
-        or self.choose_square(x+2,y-1) == colormod*3 or self.choose_square(x+2,y+1) == colormod*3 \
-        or  self.choose_square(x+1,y-2) == colormod*3 or self.choose_square(x+1,y+2) == colormod*3:
+        if self.choose_square_diff_board(x-2,y-1,board) == colormod*3 or self.choose_square_diff_board(x-2,y+1,board) == colormod*3 \
+        or  self.choose_square_diff_board(x-1,y-2,board) == colormod*3 or self.choose_square_diff_board(x-1,y+2,board) == colormod*3 \
+        or self.choose_square_diff_board(x+2,y-1,board) == colormod*3 or self.choose_square_diff_board(x+2,y+1,board) == colormod*3 \
+        or  self.choose_square_diff_board(x+1,y-2,board) == colormod*3 or self.choose_square_diff_board(x+1,y+2,board) == colormod*3:
             return True    
         unblockedfiles = [True,True,True,True]
         unblockeddiagonals = [True,True,True,True]
         for diff in range(1,n):
             #check for blocking pieces on file
             if self.whitetomove:
-                if self.choose_square(x+diff,y) == None or self.choose_square(x+diff,y) == -1 or self.choose_square(x+diff,y) > 0:
+                if self.choose_square_diff_board(x+diff,y,board) == None or self.choose_square_diff_board(x+diff,y,board) == -1 or self.choose_square_diff_board(x+diff,y,board) > 0:
                     unblockedfiles[0] = False
-                if self.choose_square(x-diff,y) == None or self.choose_square(x+diff,y) == -1 or self.choose_square(x-diff,y) > 0 :
+                if self.choose_square_diff_board(x-diff,y,board) == None or self.choose_square_diff_board(x+diff,y,board) == -1 or self.choose_square_diff_board(x-diff,y,board) > 0 :
                     unblockedfiles[1] = False
-                if self.choose_square(x,y+diff) == None  or self.choose_square(x+diff,y) == -1 or self.choose_square(x,y+diff) > 0:
+                if self.choose_square_diff_board(x,y+diff,board) == None  or self.choose_square_diff_board(x+diff,y,board) == -1 or self.choose_square_diff_board(x,y+diff,board) > 0:
                     unblockedfiles[2] = False
-                if self.choose_square(x,y-diff) == None or self.choose_square(x+diff,y) == -1 or self.choose_square(x,y-diff) > 0:
+                if self.choose_square_diff_board(x,y-diff,board) == None or self.choose_square_diff_board(x+diff,y,board) == -1 or self.choose_square_diff_board(x,y-diff,board) > 0:
                     unblockedfiles[3] = False
             else:
-                if self.choose_square(x+diff,y) == None or self.choose_square(x+diff,y) == 1 or self.choose_square(x+diff,y) < 0:
+                if self.choose_square_diff_board(x+diff,y,board) == None or self.choose_square_diff_board(x+diff,y,board) == 1 or self.choose_square_diff_board(x+diff,y,board) < 0:
                     unblockedfiles[0] = False
-                if self.choose_square(x-diff,y) == None  or self.choose_square(x+diff,y) == 1 or self.choose_square(x-diff,y) < 0:
+                if self.choose_square_diff_board(x-diff,y,board) == None  or self.choose_square_diff_board(x+diff,y,board) == 1 or self.choose_square_diff_board(x-diff,y,board) < 0:
                     unblockedfiles[1] = False
-                if self.choose_square(x,y+diff) == None or self.choose_square(x+diff,y) == 1 or self.choose_square(x,y+diff) < 0:
+                if self.choose_square_diff_board(x,y+diff,board) == None or self.choose_square_diff_board(x+diff,y,board) == 1 or self.choose_square_diff_board(x,y+diff,board) < 0:
                     unblockedfiles[2] = False
-                if self.choose_square(x,y-diff) == None or self.choose_square(x+diff,y) == 1 or self.choose_square(x,y-diff) < 0:
+                if self.choose_square_diff_board(x,y-diff,board) == None or self.choose_square_diff_board(x+diff,y,board) == 1 or self.choose_square_diff_board(x,y-diff,board) < 0:
                     unblockedfiles[3] = False
             #check for queens or rooks
             if unblockedfiles[0]:
-                if self.choose_square(x+diff,y) == colormod*5 or self.choose_square(x+diff,y) == colormod*6:
+                if self.choose_square_diff_board(x+diff,y,board) == colormod*5 or self.choose_square_diff_board(x+diff,y,board) == colormod*6:
                     return True
             if unblockedfiles[1]:
-                if self.choose_square(x-diff,y) == colormod*5 or self.choose_square(x-diff,y) == colormod*6:
+                if self.choose_square_diff_board(x-diff,y,board) == colormod*5 or self.choose_square_diff_board(x-diff,y,board) == colormod*6:
                     return True
             if unblockedfiles[2]:
-                if self.choose_square(x,y+diff) == colormod*5 or self.choose_square(x,y+diff) ==  colormod*6:
+                if self.choose_square_diff_board(x,y+diff,board) == colormod*5 or self.choose_square_diff_board(x,y+diff,board) ==  colormod*6:
                     return True
             if unblockedfiles[3]:
-                if self.choose_square(x,y-diff) == colormod*5 or self.choose_square(x,y-diff) == colormod*6:
+                if self.choose_square_diff_board(x,y-diff,board) == colormod*5 or self.choose_square_diff_board(x,y-diff,board) == colormod*6:
                     return True
             #check for blocking pieces on diagonal
             if self.whitetomove:
-                if self.choose_square(x+diff,y+diff) == None or self.choose_square(x+diff,y+diff) == -1 or self.choose_square(x+diff,y+diff) > 0:
+                if self.choose_square_diff_board(x+diff,y+diff,board) == None or self.choose_square_diff_board(x+diff,y+diff,board) == -1 or self.choose_square_diff_board(x+diff,y+diff,board) > 0:
                     unblockeddiagonals[0] = False
-                if self.choose_square(x+diff,y-diff) == None or self.choose_square(x+diff,y-diff) == -1 or self.choose_square(x+diff,y-diff) > 0:
+                if self.choose_square_diff_board(x+diff,y-diff,board) == None or self.choose_square_diff_board(x+diff,y-diff,board) == -1 or self.choose_square_diff_board(x+diff,y-diff,board) > 0:
                     unblockeddiagonals[1] = False
-                if self.choose_square(x-diff,y+diff) == None or self.choose_square(x-diff,y+diff) == -1 or self.choose_square(x-diff,y+diff) > 0:
+                if self.choose_square_diff_board(x-diff,y+diff,board) == None or self.choose_square_diff_board(x-diff,y+diff,board) == -1 or self.choose_square_diff_board(x-diff,y+diff,board) > 0:
                     unblockeddiagonals[2] = False
-                if self.choose_square(x-diff,y-diff) == None or self.choose_square(x-diff+diff,y) == -1 or self.choose_square(x-diff,y-diff) > 0:
+                if self.choose_square_diff_board(x-diff,y-diff,board) == None or self.choose_square_diff_board(x-diff+diff,y,board) == -1 or self.choose_square_diff_board(x-diff,y-diff,board) > 0:
                     unblockeddiagonals[3] = False
             else:
-                if self.choose_square(x+diff,y+diff) == None or self.choose_square(x+diff,y+diff) == 1 or self.choose_square(x+diff,y+diff) < 0:
+                if self.choose_square_diff_board(x+diff,y+diff,board) == None or self.choose_square_diff_board(x+diff,y+diff,board) == 1 or self.choose_square_diff_board(x+diff,y+diff,board) < 0:
                     unblockeddiagonals[0] = False
-                if self.choose_square(x+diff,y-diff) == None or self.choose_square(x+diff,y-diff) == 1 or self.choose_square(x+diff,y-diff) < 0:
+                if self.choose_square_diff_board(x+diff,y-diff,board) == None or self.choose_square_diff_board(x+diff,y-diff,board) == 1 or self.choose_square_diff_board(x+diff,y-diff,board) < 0:
                     unblockeddiagonals[1] = False
-                if self.choose_square(x-diff,y+diff) == None or self.choose_square(x-diff,y+diff) == 1 or self.choose_square(x-diff,y+diff) < 0:
+                if self.choose_square_diff_board(x-diff,y+diff,board) == None or self.choose_square_diff_board(x-diff,y+diff,board) == 1 or self.choose_square_diff_board(x-diff,y+diff,board) < 0:
                     unblockeddiagonals[2] = False
-                if self.choose_square(x-diff,y-diff) == None or self.choose_square(x-diff+diff,y) == 1 or self.choose_square(x-diff,y-diff) < 0:
+                if self.choose_square_diff_board(x-diff,y-diff,board) == None or self.choose_square_diff_board(x-diff+diff,y,board) == 1 or self.choose_square_diff_board(x-diff,y-diff,board) < 0:
                     unblockeddiagonals[3] = False
             #check for queens or bishops
             if unblockeddiagonals[0]:
-                if self.choose_square(x+diff,y+diff) == colormod*4 or self.choose_square(x+diff,y+diff) == colormod*6:
+                if self.choose_square_diff_board(x+diff,y+diff,board) == colormod*4 or self.choose_square_diff_board(x+diff,y+diff,board) == colormod*6:
                     return True
             if unblockeddiagonals[1]:
-                if self.choose_square(x+diff,y-diff) == colormod*4 or self.choose_square(x+diff,y-diff) == colormod*6:
+                if self.choose_square_diff_board(x+diff,y-diff,board) == colormod*4 or self.choose_square_diff_board(x+diff,y-diff,board) == colormod*6:
                     return True
             if unblockeddiagonals[2]:
-                if self.choose_square(x-diff,y+diff) == colormod*4 or self.choose_square(x-diff,y+diff) == colormod*6:
+                if self.choose_square_diff_board(x-diff,y+diff,board) == colormod*4 or self.choose_square_diff_board(x-diff,y+diff,board) == colormod*6:
                     return True
             if unblockeddiagonals[3]:
-                if self.choose_square(x-diff,y-diff) == colormod*4 or self.choose_square(x-diff,y-diff) == colormod*6:
+                if self.choose_square_diff_board(x-diff,y-diff,board) == colormod*4 or self.choose_square_diff_board(x-diff,y-diff,board) == colormod*6:
                     return True
         return False
         
@@ -274,7 +275,7 @@ class Shakki:
                     kingx = i
                     kingy = j
                     break
-        return self.square_threatened(kingx, kingy)
+        return self.square_threatened(kingx, kingy, board)
 
 
     def execute_move(self,x,y,dx,dy):
@@ -282,6 +283,11 @@ class Shakki:
             self.lauta[x+dx][y+dy] = self.lauta[x][y]
             self.lauta[x][y] = 0
             self.change_mover()
+            if self.check_for_checkmate():
+                if self.whitetomove:
+                    self.gamestatus = -1
+                else:
+                    self.gamestatus = 1
         else:
             print("illegal move, try again")
     
@@ -290,18 +296,73 @@ class Shakki:
             dupeboard = copy.deepcopy(self.lauta)
             dupeboard[x+dx][y+dy] = dupeboard[x][y]
             dupeboard[x][y] = 0
-            print(dupeboard)
             if self.king_threatened(dupeboard):
-                print("are we ever here")
                 return False
             return True
+        return False
 
-        return False      
+    def check_for_checkmate(self):
+        if self.king_threatened(self.lauta):
+            if self.check_for_having_no_moves():
+                return True
+        return False
+           
+    
+    def check_for_having_no_moves(self):
+        n = len(self.lauta)
+        for i in range(n):
+            for j in range(n):
+                piecenmbr = self.lauta[i][j]
+                if self.whitetomove:
+                    if piecenmbr < 0:
+                        if self.get_moves_for_piece(i,j,piecenmbr):
+                            return False
+                else:
+                    if piecenmbr > 0:
+                        if self.get_moves_for_piece(i,j,piecenmbr):
+                            return False
+        return True
+
+    def get_moves_for_piece(self, x, y, piecenmbr):
+        n = len(self.lauta)
+        if piecenmbr == 1:
+            if self.preview_move(x,y,-1,1) or self.preview_move(x,y,-1,-1) or self.preview_move(x,y,-1,0) or self.preview_move(x,y,-2,0):
+                return True
+        if piecenmbr == -1:
+            if self.preview_move(x,y,1,1) or self.preview_move(x,y,1,-1) or self.preview_move(x,y,1,0) or self.preview_move(x,y,2,0):
+                return True
+        if abs(piecenmbr) == 3:
+            if self.preview_move(x,y,x-2,y-1) or self.preview_move(x,y,x-2,y+1) \
+            or  self.preview_move(x,y,x-1,y-2) or self.preview_move(x,y,x-1,y+2)\
+            or self.preview_move(x,y,x+2,y-1) or self.preview_move(x,y,x+2,y+1)\
+            or  self.preview_move(x,y,x+1,y-2) or self.preview_move(x,y,x+1,y+2):
+                return True
+        if abs(piecenmbr) == 4 or abs(piecenmbr) == 6:
+            for diff in range(1,n):
+                    if self.preview_move(x,y,x+diff,y+diff) or self.preview_move(x,y,x+diff,y-diff) \
+                    or self.preview_move(x,y,x-diff,y-diff) or self.preview_move(x,y,x-diff,y+diff):
+                        return True
+        if abs(piecenmbr) == 5 or abs(piecenmbr) == 6:
+            for diff in range(1,n):
+                    if self.preview_move(x,y,x+diff,y) or self.preview_move(x,y,x,y-diff) \
+                    or self.preview_move(x,y,x-diff,y) or self.preview_move(x,y,x,y+diff):
+                        return True    
+        if abs(piecenmbr) == 7:
+                if self.preview_move(x,y,x+1,y) or self.preview_move(x,y,x+1,y-1) or self.preview_move(x,y,x+1,y+1) \
+                or self.preview_move(x,y,x,y+1) or self.preview_move(x,y,x,y-1) \
+                or self.preview_move(x,y,x-1,y) or self.preview_move(x,y,x-1,y-1) or self.preview_move(x,y,x-1,y+1):
+                    return True    
+        return False  
 
     def choose_square(self,x,y):
         if x < 0 or x >7 or y < 0 or y >7:
             return None
         return self.lauta[x][y]
+
+    def choose_square_diff_board(self,x,y, board):
+        if x < 0 or x >7 or y < 0 or y >7:
+            return None
+        return board[x][y]
     
     def change_mover(self):
         if self.whitetomove:

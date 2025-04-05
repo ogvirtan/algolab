@@ -8,7 +8,6 @@ class Piece(pygame.sprite.Sprite):
         self.name = name
         self.color = color
         self.scale = scale
-        self.position = (x//self.scale,y//self.scale)
         super().__init__()
 
         self.image = pygame.transform.scale(pygame.image.load(
@@ -19,6 +18,3 @@ class Piece(pygame.sprite.Sprite):
 
         self.rect.x = x
         self.rect.y = y
-
-    def move_ip(self, dx = 0, dy=0, scale=128):
-        self.rect.move_ip(dx*scale,dy*scale)
