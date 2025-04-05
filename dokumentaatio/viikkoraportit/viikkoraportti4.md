@@ -1,0 +1,2 @@
+# Viikko 4
+Tällä viikolla shakkipeli on muutamaa ominaisuutta vaille valmis. Peli ei vielä tunnista pattia tai mattia, mutta ei myöskään salli laittomia siirtoja joten peli "päättyy" soft-lockkiin kun siirtovuorossa olevalla pelaajalle ei ole enää siirtoja. Ensi viikolla viimeistelen shakkipeliä, ja sitten aloitan tekoälyn kehittämisen. Projekti on tällä viikolla vienyt runsaasti aikaa, mutta myös edistynyt huomattavasti. Testien kirjoittaminen sovelluksen koodin kirjoittamisen ohessa auttoi paikallistamaan bugeja suhteellisen tehokkaasti.
