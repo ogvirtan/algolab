@@ -70,6 +70,7 @@ class UI():
                                 dy = y_np-y_op                               
                                 self.peli.execute_move(x_op, y_op,dx,dy)
                             self.set_board()
+                            pygame.display.set_caption(self.peli.gamestatus)
                             self.chosen_piece_original_position = None
                             self.chosen_piece = []
     

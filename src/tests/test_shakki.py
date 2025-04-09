@@ -327,6 +327,17 @@ class TestShakki(unittest.TestCase):
                 [0,0,0,0,0,0,0,0],
                 [0,0,0,0,0,0,0,0]])
         self.assertEqual(self.peli.preview_move(3,3,-1,1), False)
+    
+    def test_king_move_out_of_bounds_white(self):
+        self.peli.set_board([[0,0,0,0,-7,0,0,0],
+                [0,0,0,0,0,-1,0,0],
+                [0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0],
+                [0,0,0,0,0,0,0,0],
+                [7,0,0,0,0,0,0,0]])
+        self.assertEqual(self.peli.preview_move(7,0,1,1), False)
 
     def test_king_move_into_check_by_bishop_white(self):
         self.peli.set_board([[0,0,0,0,-7,0,0,0],
@@ -650,9 +661,242 @@ class TestShakki(unittest.TestCase):
                 [0,0,-7,0,0,0,0,0]])
         self.assertEqual(self.peli.check_move_legality(1,2,2,-2), True)
     
-    def test_for_having_no_moves_white(self):
+    def test_for_having_no_moves_but_actually_having_moves_white(self):
         self.assertEqual(self.peli.check_for_having_no_moves(),False)
-
-    def test_for_having_no_moves_black(self):
+    
+    def test_for_having_no_moves_but_actually_having_moves_black(self):
         self.peli.change_mover()
         self.assertEqual(self.peli.check_for_having_no_moves(),False)
+
+    def test_for_having_no_moves_actually_no_moves_white(self):
+        self.peli.set_board([[-5,-3,-4,-6,-7,-4,-3,-5],
+                            [-1,-1,-1,-1,-1,-1,-1,-1],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,-5,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,-5],
+                            [7,0,0,0,0,0,0,0]])
+        self.assertEqual(self.peli.check_for_having_no_moves(),True)
+    
+    def test_for_having_no_moves_white(self):
+        self.peli.set_board([[5,3,4,6,7,4,3,5],
+                            [1,1,1,1,1,1,1,1],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [-7,0,0,0,0,0,0,0]])
+        self.assertEqual(self.peli.check_for_having_no_moves(),False)
+    
+    def test_can_king_move(self):
+        self.peli.set_board([[0,0,0,0,-7,0,0,0],
+                            [0,7,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0]])
+        self.assertEqual(self.peli.can_king_move(1,1),True)
+    
+    def test_for_having_no_moves_black(self):
+        self.peli.change_mover()
+        self.peli.set_board([[0,0,0,0,0,0,0,-7],
+                            [5,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,5,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [1,1,1,1,1,1,1,1],
+                            [5,3,4,6,7,4,3,5]])
+        self.assertEqual(self.peli.check_for_having_no_moves(),False)
+    
+    def test_for_having_no_moves_black(self):
+        self.peli.change_mover()
+        self.peli.set_board([[0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,5,0,5,0,0],
+                            [0,0,0,0,-7,0,0,0],
+                            [0,0,0,0,0,0,0,5],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0]])
+        self.assertEqual(self.peli.check_for_having_no_moves(),True)
+
+    #not having moves
+    def test_for_having_no_pawn_moves_black(self):
+        self.peli.change_mover()
+        self.peli.set_board([[-5,-3,-4,-6,-7,-4,-3,-5],
+                            [-1,-1,-1,-1,-1,-1,-1,-1],
+                            [-3,-3,-3,-3,-3,-3,-3,-3],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [1,1,1,1,1,1,1,1],
+                            [5,3,4,6,7,4,3,5]])
+        for i in range(len(self.peli.lauta)):
+            self.assertEqual(self.peli.can_pawn_move(1,i,-1),False)
+
+    def test_for_having_pawn_moves_black(self):
+        self.peli.change_mover()
+        self.peli.set_board([[-5,-3,-4,-6,-7,-4,-3,-5],
+                            [-1,-1,-1,-1,-1,-1,-1,-1],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [1,1,1,1,1,1,1,1],
+                            [5,3,4,6,7,4,3,5]])
+        for i in range(len(self.peli.lauta)):
+            self.assertEqual(self.peli.can_pawn_move(1,i,-1),True)
+
+    def test_for_having_no_knight_moves_black(self):
+        self.peli.change_mover()
+        self.peli.set_board([[-5,0,-4,-6,-7,-4,0,-5],
+                            [-1,-1,-1,-1,-1,-1,-1,-1],
+                            [0,-1,0,0,0,-1,0,0],
+                            [0,0,0,-3,0,0,0,0],
+                            [0,-1,0,0,0,-1,0,0],
+                            [0,0,-1,0,-1,0,0,0],
+                            [1,1,1,1,1,1,1,1],
+                            [5,3,4,6,7,4,3,5]])
+        self.assertEqual(self.peli.can_knight_move(3,3),False)
+
+    def test_for_having_no_bishop_moves_black(self):
+        self.peli.change_mover()
+        self.peli.set_board([[-5,-3,-4,-6,-7,-4,-3,-5],
+                                [-1,-1,-1,-1,-1,-1,-1,-1],
+                                [0,0,-1,0,-1,0,0,0],
+                                [0,0,0,-4,0,0,0,0],
+                                [0,0,-1,0,-1,0,0,0],
+                                [0,0,0,0,0,0,0,0],
+                                [1,1,1,1,1,1,1,1],
+                                [5,3,4,6,7,4,3,5]])
+        self.assertEqual(self.peli.can_bishop_move(3,3),False)
+
+    def test_for_having_no_rook_moves_black(self):
+        self.peli.change_mover()
+        self.peli.set_board([[-5,-3,-4,-6,-7,-4,-3,-5],
+                            [-1,-1,-1,-1,-1,-1,-1,-1],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [1,1,1,1,1,1,1,1],
+                            [5,3,4,6,7,4,3,5]])
+        self.assertEqual(self.peli.can_rook_move(0,0),False)
+        self.assertEqual(self.peli.can_rook_move(0,7),False)
+        self.assertEqual(self.peli.get_moves_for_piece(0,0,self.peli.lauta[0][0]),False)
+        self.assertEqual(self.peli.get_moves_for_piece(0,7,self.peli.lauta[0][7]),False)
+
+    def test_for_having_no_queen_moves_black(self):
+        self.peli.change_mover()
+        self.peli.set_board([[-5,-3,-1,-6,-7,-4,-3,-5],
+                            [-1,-1,-1,-1,-1,-1,-1,-1],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [1,1,1,1,1,1,1,1],
+                            [5,3,4,6,7,4,3,5]])
+        self.assertEqual(self.peli.can_queen_move(0,3), False)
+        self.assertEqual(self.peli.get_moves_for_piece(0,3,self.peli.lauta[0][3]),False)
+    
+    def test_for_having_no_king_moves_black(self):
+        self.peli.change_mover()
+        self.peli.set_board([[-5,-3,-1,-6,-7,-4,-3,-5],
+                            [-1,-1,-1,-1,-1,-1,-1,-1],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [1,1,1,1,1,1,1,1],
+                            [5,3,4,6,7,4,3,5]])
+        self.assertEqual(self.peli.can_king_move(0,4), False)
+        self.assertEqual(self.peli.get_moves_for_piece(0,4,self.peli.lauta[0][4]),False)
+
+    def test_for_having_no_queen_moves_white(self):
+        self.peli.set_board([[-5,-3,-1,-6,-7,-4,-3,-5],
+                            [-1,-1,-1,-1,-1,-1,-1,-1],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [1,1,1,1,1,1,1,1],
+                            [5,3,4,6,7,4,3,5]])
+        self.assertEqual(self.peli.can_queen_move(7,3),False)
+        self.assertEqual(self.peli.get_moves_for_piece(7,3,self.peli.lauta[7][3]),False)
+
+    #having moves
+    def test_for_having_bishop_moves_black(self):
+        self.peli.change_mover()
+        self.peli.set_board([[-5,-3,-4,-6,-7,-4,-3,-5],
+                                [-1,-1,-1,-1,-1,-1,-1,-1],
+                                [0,0,-1,0,-1,0,0,0],
+                                [0,0,0,-4,0,0,0,0],
+                                [0,0,0,0,-1,0,0,0],
+                                [0,0,0,0,0,0,0,0],
+                                [1,1,1,1,1,1,1,1],
+                                [5,3,4,6,7,4,3,5]])
+        self.assertEqual(self.peli.can_bishop_move(3,3),True)
+        self.assertEqual(self.peli.get_moves_for_piece(3,3,self.peli.lauta[3][3]),True)
+    
+    def test_for_having_bishop_moves_white(self):
+        self.peli.set_board([[-5,-3,-4,-6,-7,-4,-3,-5],
+                                [-1,-1,-1,-1,-1,-1,-1,-1],
+                                [0,0,1,0,1,0,0,0],
+                                [0,0,0,4,0,0,0,0],
+                                [0,0,0,0,1,0,0,0],
+                                [0,0,0,0,0,0,0,0],
+                                [1,1,1,1,1,1,1,1],
+                                [5,3,4,6,7,4,3,5]])
+        self.assertEqual(self.peli.can_bishop_move(3,3),True)
+        self.assertEqual(self.peli.get_moves_for_piece(3,3,self.peli.lauta[3][3]),True)
+    
+    def test_check_king_threatened_white_to_move(self):
+        self.peli.set_board([[-5,-3,-1,-6,-7,-4,-3,-5],
+                            [-1,-1,-1,-1,-1,-1,-1,-1],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [1,1,1,1,1,-6,1,1],
+                            [5,3,4,6,7,5,3,5]])
+        self.assertEqual(self.peli.king_threatened(self.peli.lauta),True)
+    
+    def test_check_king_take_threat_white_to_move(self):
+        self.peli.set_board([[-5,-3,-1,-6,-7,-4,-3,-5],
+                            [-1,-1,-1,-1,-1,-1,-1,-1],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [1,1,1,1,1,-6,1,1],
+                            [5,3,4,6,7,5,3,5]])
+        self.assertEqual(self.peli.king_threatened(self.peli.lauta),True)
+        self.assertEqual(self.peli.can_king_move(7,4),True)
+
+    def test_check_king_threatened_black_to_move(self):
+        self.peli.change_mover()
+        self.peli.set_board([[-5,-3,-1,-6,-7,-4,-3,-5],
+                            [-1,-1,-1,-1,-1,6,-1,-1],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [1,1,1,1,1,1,1,1],
+                            [5,3,4,6,7,5,3,5]])
+        self.assertEqual(self.peli.king_threatened(self.peli.lauta),True)
+    
+    def test_check_for_having_no_moves_only_knights_white(self):
+        self.peli.set_board([[3,0,0,0,0,0,0,3],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,3,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,7],
+                            [3,0,0,0,0,0,0,3]])
+        self.assertEqual(self.peli.check_for_having_no_moves(), False)

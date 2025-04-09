@@ -11,7 +11,7 @@ class Shakki:
                       [1,1,1,1,1,1,1,1],
                       [5,3,4,6,7,4,3,5]]
         self.whitetomove = True
-        self.gamestatus = 0
+        self.gamestatus = "WHITE TO MOVE"
 
     def set_board(self, lauta):
         self.lauta = lauta
@@ -200,20 +200,20 @@ class Shakki:
             if self.whitetomove:
                 if self.choose_square_diff_board(x+diff,y,board) == None or self.choose_square_diff_board(x+diff,y,board) == -1 or self.choose_square_diff_board(x+diff,y,board) > 0:
                     unblockedfiles[0] = False
-                if self.choose_square_diff_board(x-diff,y,board) == None or self.choose_square_diff_board(x+diff,y,board) == -1 or self.choose_square_diff_board(x-diff,y,board) > 0 :
+                if self.choose_square_diff_board(x-diff,y,board) == None or self.choose_square_diff_board(x-diff,y,board) == -1 or self.choose_square_diff_board(x-diff,y,board) > 0 :
                     unblockedfiles[1] = False
-                if self.choose_square_diff_board(x,y+diff,board) == None  or self.choose_square_diff_board(x+diff,y,board) == -1 or self.choose_square_diff_board(x,y+diff,board) > 0:
+                if self.choose_square_diff_board(x,y+diff,board) == None or self.choose_square_diff_board(x,y+diff,board) == -1 or self.choose_square_diff_board(x,y+diff,board) > 0:
                     unblockedfiles[2] = False
-                if self.choose_square_diff_board(x,y-diff,board) == None or self.choose_square_diff_board(x+diff,y,board) == -1 or self.choose_square_diff_board(x,y-diff,board) > 0:
+                if self.choose_square_diff_board(x,y-diff,board) == None or self.choose_square_diff_board(x,y-diff,board) == -1 or self.choose_square_diff_board(x,y-diff,board) > 0:
                     unblockedfiles[3] = False
             else:
                 if self.choose_square_diff_board(x+diff,y,board) == None or self.choose_square_diff_board(x+diff,y,board) == 1 or self.choose_square_diff_board(x+diff,y,board) < 0:
                     unblockedfiles[0] = False
-                if self.choose_square_diff_board(x-diff,y,board) == None  or self.choose_square_diff_board(x+diff,y,board) == 1 or self.choose_square_diff_board(x-diff,y,board) < 0:
+                if self.choose_square_diff_board(x-diff,y,board) == None or self.choose_square_diff_board(x-diff,y,board) == 1 or self.choose_square_diff_board(x-diff,y,board) < 0:
                     unblockedfiles[1] = False
-                if self.choose_square_diff_board(x,y+diff,board) == None or self.choose_square_diff_board(x+diff,y,board) == 1 or self.choose_square_diff_board(x,y+diff,board) < 0:
+                if self.choose_square_diff_board(x,y+diff,board) == None or self.choose_square_diff_board(x,y+diff,board) == 1 or self.choose_square_diff_board(x,y+diff,board) < 0:
                     unblockedfiles[2] = False
-                if self.choose_square_diff_board(x,y-diff,board) == None or self.choose_square_diff_board(x+diff,y,board) == 1 or self.choose_square_diff_board(x,y-diff,board) < 0:
+                if self.choose_square_diff_board(x,y-diff,board) == None or self.choose_square_diff_board(x,y-diff,board) == 1 or self.choose_square_diff_board(x,y-diff,board) < 0:
                     unblockedfiles[3] = False
             #check for queens or rooks
             if unblockedfiles[0]:
@@ -236,7 +236,7 @@ class Shakki:
                     unblockeddiagonals[1] = False
                 if self.choose_square_diff_board(x-diff,y+diff,board) == None or self.choose_square_diff_board(x-diff,y+diff,board) == -1 or self.choose_square_diff_board(x-diff,y+diff,board) > 0:
                     unblockeddiagonals[2] = False
-                if self.choose_square_diff_board(x-diff,y-diff,board) == None or self.choose_square_diff_board(x-diff+diff,y,board) == -1 or self.choose_square_diff_board(x-diff,y-diff,board) > 0:
+                if self.choose_square_diff_board(x-diff,y-diff,board) == None or self.choose_square_diff_board(x-diff,y-diff,board) == -1 or self.choose_square_diff_board(x-diff,y-diff,board) > 0:
                     unblockeddiagonals[3] = False
             else:
                 if self.choose_square_diff_board(x+diff,y+diff,board) == None or self.choose_square_diff_board(x+diff,y+diff,board) == 1 or self.choose_square_diff_board(x+diff,y+diff,board) < 0:
@@ -245,7 +245,7 @@ class Shakki:
                     unblockeddiagonals[1] = False
                 if self.choose_square_diff_board(x-diff,y+diff,board) == None or self.choose_square_diff_board(x-diff,y+diff,board) == 1 or self.choose_square_diff_board(x-diff,y+diff,board) < 0:
                     unblockeddiagonals[2] = False
-                if self.choose_square_diff_board(x-diff,y-diff,board) == None or self.choose_square_diff_board(x-diff+diff,y,board) == 1 or self.choose_square_diff_board(x-diff,y-diff,board) < 0:
+                if self.choose_square_diff_board(x-diff,y-diff,board) == None or self.choose_square_diff_board(x-diff,y-diff,board) == 1 or self.choose_square_diff_board(x-diff,y-diff,board) < 0:
                     unblockeddiagonals[3] = False
             #check for queens or bishops
             if unblockeddiagonals[0]:
@@ -283,11 +283,13 @@ class Shakki:
             self.lauta[x+dx][y+dy] = self.lauta[x][y]
             self.lauta[x][y] = 0
             self.change_mover()
-            if self.check_for_checkmate():
-                if self.whitetomove:
-                    self.gamestatus = -1
+            if self.king_threatened(self.lauta):
+                self.gamestatus = "CHECK! " + self.gamestatus
+            if self.check_for_having_no_moves():
+                if self.king_threatened(self.lauta):
+                    self.gamestatus = "CHECKMATE"
                 else:
-                    self.gamestatus = 1
+                    self.gamestatus = "STALEMATE"
         else:
             print("illegal move, try again")
     
@@ -300,59 +302,104 @@ class Shakki:
                 return False
             return True
         return False
-
-    def check_for_checkmate(self):
-        if self.king_threatened(self.lauta):
-            if self.check_for_having_no_moves():
-                return True
-        return False
-           
     
     def check_for_having_no_moves(self):
         n = len(self.lauta)
-        for i in range(n):
-            for j in range(n):
-                piecenmbr = self.lauta[i][j]
-                if self.whitetomove:
-                    if piecenmbr < 0:
-                        if self.get_moves_for_piece(i,j,piecenmbr):
-                            return False
-                else:
+        rval = True
+        for x in range(n):
+            for y in range(n):
+                piecenmbr = self.choose_square(x,y)
+                if self.whitetomove:               
                     if piecenmbr > 0:
-                        if self.get_moves_for_piece(i,j,piecenmbr):
-                            return False
-        return True
+                        if self.get_moves_for_piece(x,y, piecenmbr):
+                            rval = False
+                else:
+                    if piecenmbr < 0:
+                        if self.get_moves_for_piece(x,y, piecenmbr):
+                            rval = False
+        return rval
 
     def get_moves_for_piece(self, x, y, piecenmbr):
-        n = len(self.lauta)
+        if abs(piecenmbr) == 1:
+            return self.can_pawn_move(x,y,piecenmbr)
+        elif abs(piecenmbr) == 3:
+            return self.can_knight_move(x,y)
+        elif abs(piecenmbr) == 4:
+            return self.can_bishop_move(x,y)
+        elif abs(piecenmbr) == 5:
+            return self.can_rook_move(x,y) 
+        elif abs(piecenmbr) == 6:
+            return self.can_queen_move(x,y) 
+        elif abs(piecenmbr) == 7:
+            return self.can_king_move(x,y)
+        return False
+
+    def can_pawn_move(self,x,y,piecenmbr):
         if piecenmbr == 1:
             if self.preview_move(x,y,-1,1) or self.preview_move(x,y,-1,-1) or self.preview_move(x,y,-1,0) or self.preview_move(x,y,-2,0):
                 return True
         if piecenmbr == -1:
             if self.preview_move(x,y,1,1) or self.preview_move(x,y,1,-1) or self.preview_move(x,y,1,0) or self.preview_move(x,y,2,0):
                 return True
-        if abs(piecenmbr) == 3:
-            if self.preview_move(x,y,x-2,y-1) or self.preview_move(x,y,x-2,y+1) \
-            or  self.preview_move(x,y,x-1,y-2) or self.preview_move(x,y,x-1,y+2)\
-            or self.preview_move(x,y,x+2,y-1) or self.preview_move(x,y,x+2,y+1)\
-            or  self.preview_move(x,y,x+1,y-2) or self.preview_move(x,y,x+1,y+2):
-                return True
-        if abs(piecenmbr) == 4 or abs(piecenmbr) == 6:
-            for diff in range(1,n):
-                    if self.preview_move(x,y,x+diff,y+diff) or self.preview_move(x,y,x+diff,y-diff) \
-                    or self.preview_move(x,y,x-diff,y-diff) or self.preview_move(x,y,x-diff,y+diff):
-                        return True
-        if abs(piecenmbr) == 5 or abs(piecenmbr) == 6:
-            for diff in range(1,n):
-                    if self.preview_move(x,y,x+diff,y) or self.preview_move(x,y,x,y-diff) \
-                    or self.preview_move(x,y,x-diff,y) or self.preview_move(x,y,x,y+diff):
-                        return True    
-        if abs(piecenmbr) == 7:
-                if self.preview_move(x,y,x+1,y) or self.preview_move(x,y,x+1,y-1) or self.preview_move(x,y,x+1,y+1) \
-                or self.preview_move(x,y,x,y+1) or self.preview_move(x,y,x,y-1) \
-                or self.preview_move(x,y,x-1,y) or self.preview_move(x,y,x-1,y-1) or self.preview_move(x,y,x-1,y+1):
-                    return True    
-        return False  
+        return False
+
+    def can_knight_move(self,x,y):
+        if self.preview_move(x,y,-2,-1) or self.preview_move(x,y,2,1) \
+        or  self.preview_move(x,y,-1,-2) or self.preview_move(x,y,1,2)\
+        or self.preview_move(x,y,2,1) or self.preview_move(x,y,2,1)\
+        or  self.preview_move(x,y,1,2) or self.preview_move(x,y,1,2):
+            return True
+        return False
+
+    def can_bishop_move(self,x,y):
+        n = len(self.lauta)
+        unblockeddiagonals = [True,True,True,True]
+        for dz in range(1,n):
+            if unblockeddiagonals[0]:
+                if self.preview_move(x,y,dz,dz):
+                    return True             
+                else:
+                    unblockeddiagonals[0] = False
+            if unblockeddiagonals[1]:
+                if self.preview_move(x,y,dz,-dz):
+                    return True   
+                else:
+                    unblockeddiagonals[1] = False
+            if unblockeddiagonals[2]:
+                if self.preview_move(x,y,-dz,dz):
+                    return True
+                else:
+                    unblockeddiagonals[2] = False
+            if unblockeddiagonals[3]:
+                if self.preview_move(x,y,-dz,-dz):
+                    return True
+                else:      
+                    unblockeddiagonals[3] = False
+            else:
+                break
+        return False
+
+    def can_rook_move(self,x,y):
+        n = len(self.lauta)
+        for diff in range(1,n):
+            if self.preview_move(x,y,diff,0) or self.preview_move(x,y,0,-diff) \
+            or self.preview_move(x,y,-diff,0) or self.preview_move(x,y,0,diff):
+                return True  
+        return False
+
+    def can_queen_move(self,x,y):
+        if self.can_bishop_move(x,y):
+            return True
+        elif self.can_rook_move(x,y):
+            return True
+        return False
+    
+    def can_king_move(self,x,y):
+        if self.preview_move(x,y,1,0) or self.preview_move(x,y,1,-1) or self.preview_move(x,y,1,1) \
+        or self.preview_move(x,y,0,1) or self.preview_move(x,y,0,-1) \
+        or self.preview_move(x,y,-1,0) or self.preview_move(x,y,-1,-1) or self.preview_move(x,y,-1,1):
+            return True
+        return False 
 
     def choose_square(self,x,y):
         if x < 0 or x >7 or y < 0 or y >7:
@@ -367,8 +414,10 @@ class Shakki:
     def change_mover(self):
         if self.whitetomove:
             self.whitetomove = False
+            self.gamestatus = "BLACK TO MOVE"
         else:
             self.whitetomove = True
+            self.gamestatus = "WHITE TO MOVE"
     
     def print_board(self):
         for row in self.lauta:
