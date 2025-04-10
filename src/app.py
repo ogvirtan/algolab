@@ -1,4 +1,4 @@
-from ui import UI
+from ui.user_interface import UI
 
 def main():
     kayttoliittyma = UI() 
