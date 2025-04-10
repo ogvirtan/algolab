@@ -13,9 +13,6 @@ class Shakki:
         self.whitetomove = True
         self.gamestatus = "WHITE TO MOVE"
 
-    def set_board(self, lauta):
-        self.lauta = lauta
-
     def move_like_pawn(self, x,y,dx,dy):
         if self.whitetomove:
             if dx == -1:
@@ -344,10 +341,10 @@ class Shakki:
         return False
 
     def can_knight_move(self,x,y):
-        if self.preview_move(x,y,-2,-1) or self.preview_move(x,y,2,1) \
-        or  self.preview_move(x,y,-1,-2) or self.preview_move(x,y,1,2)\
-        or self.preview_move(x,y,2,1) or self.preview_move(x,y,2,1)\
-        or  self.preview_move(x,y,1,2) or self.preview_move(x,y,1,2):
+        if self.preview_move(x,y,-2,-1) or self.preview_move(x,y,-2,1) \
+        or  self.preview_move(x,y,-1,-2) or self.preview_move(x,y,-1,2)\
+        or self.preview_move(x,y,2,-1) or self.preview_move(x,y,2,1)\
+        or  self.preview_move(x,y,1,2) or self.preview_move(x,y,1,-2):
             return True
         return False
 
@@ -419,8 +416,214 @@ class Shakki:
             self.whitetomove = True
             self.gamestatus = "WHITE TO MOVE"
     
+    def set_board(self, lauta):
+        self.lauta = lauta
+    
+    def set_board_FEN(self, fenstring:str):
+        reverse_style_dict_FEN = {"P":1,"N":3,"B":4,"R":5,"Q":6,"K":7,"p":-1,"n":-3,"b":-4,"r":-5,"q":-6,"k":-7}
+        unpacked = []
+        temp = []
+        for item in fenstring:
+            if item not in reverse_style_dict_FEN.keys():
+                if item == "/":
+                    continue
+                for i in range(int(item)):
+                    temp.append(0)
+            else:
+                temp.append(reverse_style_dict_FEN[item])
+            if len(temp) == 8:
+                unpacked.append(temp)
+                temp = []
+        self.lauta = unpacked
+    
     def print_board(self):
         for row in self.lauta:
             for item in row:
                 print(item, end='\t')
             print("\n")
+    
+    def get_board_as_SAN(self):
+        style_dict_SAN = { 0:".",1:"P",3:"N",4:"B",5:"R",6:"Q",7:"K",-1:"p",-3:"n",-4:"b",-5:"r",-6:"q",-7:"k"}
+        rval = ""
+        for row in self.lauta:
+            for item in row:
+                rval += style_dict_SAN[item] + " "
+            rval += "\n"
+        return rval
+    
+    def get_board_as_FEN(self):
+        rval = ""
+        style_dict_FEN = {1:"P",3:"N",4:"B",5:"R",6:"Q",7:"K",-1:"p",-3:"n",-4:"b",-5:"r",-6:"q",-7:"k"}
+        n = len(self.lauta)
+        for i in range(n):
+            counter = 0
+            for j in range(n):
+                if  self.lauta[i][j] != 0:
+                    rval += style_dict_FEN[self.lauta[i][j]]
+                    if counter != 0:
+                        rval += str(counter)
+                        counter = 0
+                else:
+                    counter += 1
+            if counter != 0:
+                rval += str(counter)
+            if i != 7:
+                rval += "/"
+        if self.whitetomove:
+            rval += " w - - 0 0" 
+        else:
+            rval += " b - - 0 0"
+        
+        return rval
+
+    def return_move_list(self):
+        allmovelist = []
+        n = len(self.lauta)
+        for x in range(n):
+            for y in range(n):
+                piecenmbr = self.choose_square(x,y)
+                if self.whitetomove:               
+                    if piecenmbr > 0:
+                        temp = self.get_movelist_for_piece(x,y, piecenmbr)
+                        if temp != []:
+                            allmovelist.extend(temp)
+                else:
+                    if piecenmbr < 0:
+                        temp = self.get_movelist_for_piece(x,y, piecenmbr)
+                        if temp != []:
+                            allmovelist.extend(temp)
+        return allmovelist
+
+    def get_movelist_for_piece(self, x, y, piecenmbr):
+        mvlist = []
+        if abs(piecenmbr) == 1:
+            mvlist.extend(self.can_pawn_movelist(x,y,piecenmbr))
+        elif abs(piecenmbr) == 3:
+            mvlist.extend(self.can_knight_movelist(x,y))
+        elif abs(piecenmbr) == 4:
+            mvlist.extend(self.can_bishop_movelist(x,y))
+        elif abs(piecenmbr) == 5:
+            mvlist.extend(self.can_rook_movelist(x,y))
+        elif abs(piecenmbr) == 6:
+            mvlist.extend(self.can_queen_movelist(x,y))
+        elif abs(piecenmbr) == 7:
+            mvlist.extend(self.can_king_movelist(x,y))
+        return mvlist
+
+    def can_pawn_movelist(self,x,y,piecenmbr):
+        movelist = []
+        if piecenmbr == 1:
+            if self.preview_move(x,y,-1,1):
+                movelist.append((self.move_as_UCI(x,y,-1,1)))
+            if self.preview_move(x,y,-1,-1):
+                movelist.append((self.move_as_UCI(x,y,-1,-1)))
+            if self.preview_move(x,y,-1,0):
+                movelist.append((self.move_as_UCI(x,y,-1,0)))
+            if self.preview_move(x,y,-2,0):
+                movelist.append((self.move_as_UCI(x,y,-2,0)))
+                
+        if piecenmbr == -1:
+            if self.preview_move(x,y,1,1):
+                movelist.append((self.move_as_UCI(x,y,1,1)))
+            if self.preview_move(x,y,1,-1):
+                movelist.append((self.move_as_UCI(x,y,1,-1)))
+            if self.preview_move(x,y,1,0):
+                movelist.append((self.move_as_UCI(x,y,1,0)))
+            if self.preview_move(x,y,2,0):
+                movelist.append((self.move_as_UCI(x,y,2,0)))
+
+        return movelist
+
+    def can_knight_movelist(self,x,y):
+        movelist = []
+        if self.preview_move(x,y,-2,-1):
+            movelist.append(self.move_as_UCI(x,y,-2,-1))
+        if self.preview_move(x,y,-2,1):
+            movelist.append(self.move_as_UCI(x,y,-2,1))
+        if self.preview_move(x,y,-1,-2):
+            movelist.append(self.move_as_UCI(x,y,-1,-2))
+        if self.preview_move(x,y,-1,2):
+            movelist.append(self.move_as_UCI(x,y,-1,2))
+        if self.preview_move(x,y,2,1):
+            movelist.append(self.move_as_UCI(x,y,2,1))
+        if self.preview_move(x,y,2,-1):
+            movelist.append(self.move_as_UCI(x,y,2,-1))
+        if  self.preview_move(x,y,1,-2):
+            movelist.append(self.move_as_UCI(x,y,1,-2))
+        if self.preview_move(x,y,1,2):
+            movelist.append(self.move_as_UCI(x,y,1,2))
+        return movelist
+
+    def can_bishop_movelist(self,x,y):
+        movelist = []
+        n = len(self.lauta)
+        unblockeddiagonals = [True,True,True,True]
+        for dz in range(1,n):
+            if unblockeddiagonals[0]:
+                if self.preview_move(x,y,dz,dz):
+                    movelist.append(self.move_as_UCI(x,y,dz,dz))             
+                else:
+                    unblockeddiagonals[0] = False
+            if unblockeddiagonals[1]:
+                if self.preview_move(x,y,dz,-dz):
+                    movelist.append(self.move_as_UCI(x,y,dz,-dz))
+                else:
+                    unblockeddiagonals[1] = False
+            if unblockeddiagonals[2]:
+                if self.preview_move(x,y,-dz,dz):
+                    movelist.append(self.move_as_UCI(x,y,-dz,dz)) 
+                else:
+                    unblockeddiagonals[2] = False
+            if unblockeddiagonals[3]:
+                if self.preview_move(x,y,-dz,-dz):
+                    movelist.append(self.move_as_UCI(x,y,-dz,-dz))
+                else:      
+                    unblockeddiagonals[3] = False
+            else:
+                break
+        return movelist
+
+    def can_rook_movelist(self,x,y):
+        movelist = []
+        n = len(self.lauta)
+        for diff in range(1,n):
+            if self.preview_move(x,y,diff,0):
+                movelist.append(self.move_as_UCI(x,y,diff,0)) 
+            if self.preview_move(x,y,0,-diff):
+                movelist.append(self.move_as_UCI(x,y,0,-diff)) 
+            if self.preview_move(x,y,-diff,0):
+                movelist.append(self.move_as_UCI(x,y,-diff,0)) 
+            if self.preview_move(x,y,0,diff):
+                movelist.append(self.move_as_UCI(x,y,0,diff))  
+        return movelist
+
+    def can_queen_movelist(self,x,y):
+        movelist = []
+        movelist.extend(self.can_bishop_movelist(x,y))
+        movelist.extend(self.can_rook_movelist(x,y))
+        return movelist
+    
+    def can_king_movelist(self,x,y):
+        movelist = []
+        if self.preview_move(x,y,1,0):
+            movelist.append(self.move_as_UCI(x,y,1,0))
+        if self.preview_move(x,y,1,-1):
+            movelist.append(self.move_as_UCI(x,y,1,-1))
+        if self.preview_move(x,y,1,1):
+            movelist.append(self.move_as_UCI(x,y,1,1))
+        if self.preview_move(x,y,0,1):
+            movelist.append(self.move_as_UCI(x,y,0,1))
+        if self.preview_move(x,y,0,-1):
+            movelist.append(self.move_as_UCI(x,y,0,-1))
+        if self.preview_move(x,y,-1,0):
+            movelist.append(self.move_as_UCI(x,y,-1,0))
+        if self.preview_move(x,y,-1,-1):
+            movelist.append(self.move_as_UCI(x,y,-1,-1))
+        if self.preview_move(x,y,-1,1):
+            movelist.append(self.move_as_UCI(x,y,-1,1))
+        return movelist
+    
+    def move_as_UCI(self,x,y,dx,dy):
+        style_dict_UCI_row = { 0:"a",1:"b",2:"c",3: "d",4:"e",5:"f",6:"g",7:"h"}
+        style_dict_UCI_file = { 0:"8",1:"7",2:"6",3: "5",4:"4",5:"3",6:"2",7:"1"}
+        return style_dict_UCI_row[y] + style_dict_UCI_file[x] + style_dict_UCI_row[y+dy] + style_dict_UCI_file[x+dx]
