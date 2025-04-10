@@ -417,6 +417,24 @@ class TestShakki(unittest.TestCase):
         self.assertEqual(self.peli.square_threatened(5,2,self.peli.lauta), True)
         self.assertEqual(self.peli.square_threatened(2,5,self.peli.lauta), True)
 
+    def test_square_threatened_king_white(self):
+        self.peli.set_board([[0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,-7,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,7,0,0,0]])
+        self.assertEqual(self.peli.square_threatened(4,4,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(4,3,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(4,2,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(3,4,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(3,2,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(2,4,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(2,3,self.peli.lauta), True)
+        self.assertEqual(self.peli.square_threatened(2,2,self.peli.lauta), True)
+
     #king black
     def test_king_move_emptyish_board_black(self):
         self.peli.change_mover()

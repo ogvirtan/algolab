@@ -257,6 +257,23 @@ class Shakki:
             if unblockeddiagonals[3]:
                 if self.choose_square_diff_board(x-diff,y-diff,board) == colormod*4 or self.choose_square_diff_board(x-diff,y-diff,board) == colormod*6:
                     return True
+            #check for kings
+            if self.choose_square_diff_board(x+1,y,board) == colormod*7:
+                return True
+            if self.choose_square_diff_board(x+1,y-1,board) == colormod*7:
+                return True
+            if self.choose_square_diff_board(x+1,y+1,board) == colormod*7:
+                return True
+            if self.choose_square_diff_board(x,y+1,board) == colormod*7:
+                return True
+            if self.choose_square_diff_board(x,y-1,board) == colormod*7:
+                return True
+            if self.choose_square_diff_board(x-1,y,board) == colormod*7:
+                return True
+            if self.choose_square_diff_board(x-1,y-1,board) == colormod*7:
+                return True
+            if self.choose_square_diff_board(x-1,y+1,board) == colormod*7:
+                return True
         return False
         
     def king_threatened(self, board):
