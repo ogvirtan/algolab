@@ -918,14 +918,3 @@ class TestShakki(unittest.TestCase):
                             [0,0,0,0,0,0,0,7],
                             [3,0,0,0,0,0,0,3]])
         self.assertEqual(self.peli.check_for_having_no_moves(), False)
-
-    def test_bishop_ctrl(self):
-        self.peli.set_board([[0,0,0,0,0,0,0,0],
-                            [0,0,0,0,0,0,0,0],
-                            [0,0,0,0,0,0,0,0],
-                            [0,0,0,7,4,-7,0,0],
-                            [0,0,0,0,0,0,0,0],
-                            [0,0,0,0,0,0,0,0],
-                            [0,0,0,0,0,0,0,0],
-                            [3,0,0,0,0,0,0,0]])
-        self.assertEqual(self.peli.bishop_control(3,4,self.peli.lauta,[]))
