@@ -12,6 +12,7 @@ class Shakki:
                       [5,3,4,6,7,4,3,5]]
         self.whitetomove = True
         self.gamestatus = "WHITE TO MOVE"
+        self.draw_by_repetition = {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 0":1}
 
     def move_like_pawn(self, x,y,dx,dy,board,mover=None):
         if mover == None:
@@ -186,9 +187,13 @@ class Shakki:
                 return self.move_like_king(x,y,dx,dy,board,mover)
         return False
 
-    def square_threatened(self, x, y, board):
-        n = len(self.lauta)
-        if self.whitetomove:
+    def square_threatened(self, x, y, board=[],mover = None):
+        if board == []:
+            board = self.lauta
+        n = len(board)
+        if mover == None:
+            mover = self.whitetomove        
+        if mover:
             colormod = -1
             #check for pawns
             if self.choose_square(x-1,y-1,board) == colormod*1 or self.choose_square(x-1,y+1,board) == colormod*1:
@@ -208,7 +213,7 @@ class Shakki:
         unblockeddiagonals = [True,True,True,True]
         for diff in range(1,n):
             #check for blocking pieces on file
-            if self.whitetomove:
+            if mover:
                 if self.choose_square(x+diff,y,board) == None or self.choose_square(x+diff,y,board) == -1 or self.choose_square(x+diff,y,board) > 0:
                     unblockedfiles[0] = False
                 if self.choose_square(x-diff,y,board) == None or self.choose_square(x-diff,y,board) == -1 or self.choose_square(x-diff,y,board) > 0 :
@@ -240,7 +245,7 @@ class Shakki:
                 if self.choose_square(x,y-diff,board) == colormod*5 or self.choose_square(x,y-diff,board) == colormod*6:
                     return True
             #check for blocking pieces on diagonal
-            if self.whitetomove:
+            if mover:
                 if self.choose_square(x+diff,y+diff,board) == None or self.choose_square(x+diff,y+diff,board) == -1 or self.choose_square(x+diff,y+diff,board) > 0:
                     unblockeddiagonals[0] = False
                 if self.choose_square(x+diff,y-diff,board) == None or self.choose_square(x+diff,y-diff,board) == -1 or self.choose_square(x+diff,y-diff,board) > 0:
@@ -271,29 +276,33 @@ class Shakki:
             if unblockeddiagonals[3]:
                 if self.choose_square(x-diff,y-diff,board) == colormod*4 or self.choose_square(x-diff,y-diff,board) == colormod*6:
                     return True
-            #check for kings
-            if self.choose_square(x+1,y,board) == colormod*7:
-                return True
-            if self.choose_square(x+1,y-1,board) == colormod*7:
-                return True
-            if self.choose_square(x+1,y+1,board) == colormod*7:
-                return True
-            if self.choose_square(x,y+1,board) == colormod*7:
-                return True
-            if self.choose_square(x,y-1,board) == colormod*7:
-                return True
-            if self.choose_square(x-1,y,board) == colormod*7:
-                return True
-            if self.choose_square(x-1,y-1,board) == colormod*7:
-                return True
-            if self.choose_square(x-1,y+1,board) == colormod*7:
-                return True
+        #check for kings
+        if self.choose_square(x+1,y,board) == colormod*7:
+            return True
+        if self.choose_square(x+1,y-1,board) == colormod*7:
+            return True
+        if self.choose_square(x+1,y+1,board) == colormod*7:
+            return True
+        if self.choose_square(x,y+1,board) == colormod*7:
+            return True
+        if self.choose_square(x,y-1,board) == colormod*7:
+            return True
+        if self.choose_square(x-1,y,board) == colormod*7:
+            return True
+        if self.choose_square(x-1,y-1,board) == colormod*7:
+            return True
+        if self.choose_square(x-1,y+1,board) == colormod*7:
+            return True
         return False
         
-    def king_threatened(self, board):
+    def king_threatened(self, board=[], mover = None):
+        if board == []:
+            board = self.lauta
         n = len(board)
         colormod = -1
-        if self.whitetomove:
+        if mover == None:
+            mover = self.whitetomove
+        if mover:
             colormod = 1
         kingx = None
         kingy = None
@@ -303,14 +312,22 @@ class Shakki:
                     kingx = i
                     kingy = j
                     break
-        return self.square_threatened(kingx, kingy, board)
+        return self.square_threatened(kingx, kingy, board, mover)
 
 
     def execute_move(self,x,y,dx,dy):
-        if self.preview_move(x,y,dx,dy,self.lauta,self.whitetomove):
+        if self.preview_move(x,y,dx,dy):
+            if abs(self.choose_square(x,y)) == 1:
+                self.draw_by_repetition = {}
             self.lauta[x+dx][y+dy] = self.lauta[x][y]
             self.lauta[x][y] = 0
+            self.promote_pawns()
             self.change_mover()
+            fenboard = self.get_board_as_FEN()
+            if self.draw_by_repetition.setdefault(fenboard,0) != None:
+                self.draw_by_repetition[fenboard] += 1
+                if self.draw_by_repetition[fenboard] == 3:
+                    self.gamestatus = "DRAW BY REPETITION"                
             if self.king_threatened(self.lauta):
                 self.gamestatus = "CHECK! " + self.gamestatus
             if self.check_for_having_no_moves():
@@ -321,7 +338,15 @@ class Shakki:
         else:
             #print("illegal move, try again")
             pass
-    
+
+    def promote_pawns(self):
+        n = len(self.lauta)
+        for i in range(n):
+            if self.choose_square(0,i) == 1:
+                self.lauta[0][i] = 6
+            if self.choose_square(7,i) == -1:
+                self.lauta[7][i] = -6
+
     def preview_move(self,x,y,dx,dy,board=[],mover= None):
         if mover == None:
             mover = self.whitetomove
@@ -331,7 +356,7 @@ class Shakki:
             dupeboard = copy.deepcopy(board)
             dupeboard[x+dx][y+dy] = dupeboard[x][y]
             dupeboard[x][y] = 0
-            if self.king_threatened(dupeboard):
+            if self.king_threatened(dupeboard,mover):
                 return False
             return True
         return False
@@ -681,15 +706,12 @@ class Shakki:
                             all_controlled_squares.extend(temp)
         return all_controlled_squares
     
-    def return_control_set(self,board,mover):
-        return set(self.return_control_list(board,mover))
-    
     def get_control_for_piece(self,x,y,piecenmbr,board):
         threatlist = []
         if abs(piecenmbr) == 1:
             threatlist.extend(self.pawn_control(x,y,piecenmbr))
         elif abs(piecenmbr) == 3:
-            threatlist.extend(self.knight_control(x,y,board))
+            threatlist.extend(self.knight_control(x,y))
         elif abs(piecenmbr) == 4:
             threatlist.extend(self.bishop_control(x,y,board))
         elif abs(piecenmbr) == 5:
@@ -704,36 +726,36 @@ class Shakki:
         threatlist = []
         if piecenmbr == 1:
             if self.square_is_in_bounds(x-1,y+1):
-                threatlist.append((self.position_after_move_as_UCI(x,y,-1,1)))
+                threatlist.append((self.position_after_move_as_tuple(x,y,-1,1)))
             if self.square_is_in_bounds(x-1,y-1):
-                threatlist.append((self.position_after_move_as_UCI(x,y,-1,-1)))
+                threatlist.append((self.position_after_move_as_tuple(x,y,-1,-1)))
                 
         if piecenmbr == -1:
             if self.square_is_in_bounds(x+1,y+1):
-                threatlist.append((self.position_after_move_as_UCI(x,y,1,1)))
+                threatlist.append((self.position_after_move_as_tuple(x,y,1,1)))
             if self.square_is_in_bounds(x+1,y-1):
-                threatlist.append((self.position_after_move_as_UCI(x,y,1,-1)))
+                threatlist.append((self.position_after_move_as_tuple(x,y,1,-1)))
 
         return threatlist
     
     def knight_control(self,x,y):
         control_list = []
         if self.square_is_in_bounds(x-2,y-1):
-            control_list.append(self.position_after_move_as_UCI(x,y,-2,-1))
+            control_list.append(self.position_after_move_as_tuple(x,y,-2,-1))
         if self.square_is_in_bounds(x-2,y+1):
-            control_list.append(self.position_after_move_as_UCI(x,y,-2,1))
+            control_list.append(self.position_after_move_as_tuple(x,y,-2,1))
         if self.square_is_in_bounds(x-1,y-2):
-            control_list.append(self.position_after_move_as_UCI(x,y,-1,-2))
+            control_list.append(self.position_after_move_as_tuple(x,y,-1,-2))
         if self.square_is_in_bounds(x-1,y+2):
-            control_list.append(self.position_after_move_as_UCI(x,y,-1,2))
+            control_list.append(self.position_after_move_as_tuple(x,y,-1,2))
         if self.square_is_in_bounds(x+2,y+1):
-            control_list.append(self.position_after_move_as_UCI(x,y,2,1))
+            control_list.append(self.position_after_move_as_tuple(x,y,2,1))
         if self.square_is_in_bounds(x+2,y-1):
-            control_list.append(self.position_after_move_as_UCI(x,y,2,-1))
+            control_list.append(self.position_after_move_as_tuple(x,y,2,-1))
         if  self.square_is_in_bounds(x+1,y-2):
-            control_list.append(self.position_after_move_as_UCI(x,y,1,-2))
+            control_list.append(self.position_after_move_as_tuple(x,y,1,-2))
         if self.square_is_in_bounds(x+1,y+2):
-            control_list.append(self.position_after_move_as_UCI(x,y,1,2))
+            control_list.append(self.position_after_move_as_tuple(x,y,1,2))
         return control_list
     
     def bishop_control(self,x,y,board):
@@ -743,28 +765,28 @@ class Shakki:
         for dz in range(1,n):
             if unblockeddiagonals[0]:
                 if self.square_is_in_bounds(x+dz,y+dz):
-                    movelist.append(self.position_after_move_as_UCI(x,y,dz,dz))
+                    movelist.append(self.position_after_move_as_tuple(x,y,dz,dz))
                     if self.choose_square(x+dz,y+dz,board) != 0:
                         unblockeddiagonals[0] = False             
                 else:
                     unblockeddiagonals[0] = False
             if unblockeddiagonals[1]:
                 if self.square_is_in_bounds(x+dz,y-dz):
-                    movelist.append(self.position_after_move_as_UCI(x,y,dz,-dz))
+                    movelist.append(self.position_after_move_as_tuple(x,y,dz,-dz))
                     if self.choose_square(x+dz,y-dz,board) != 0:
                         unblockeddiagonals[1] = False    
                 else:
                     unblockeddiagonals[1] = False
             if unblockeddiagonals[2]:
                 if self.square_is_in_bounds(x-dz,y+dz):
-                    movelist.append(self.position_after_move_as_UCI(x,y,-dz,dz))
+                    movelist.append(self.position_after_move_as_tuple(x,y,-dz,dz))
                     if self.choose_square(x-dz,y+dz,board) != 0:
                         unblockeddiagonals[2] = False    
                 else:
                     unblockeddiagonals[2] = False
             if unblockeddiagonals[3]:
                 if self.square_is_in_bounds(x-dz,y-dz):
-                    movelist.append(self.position_after_move_as_UCI(x,y,-dz,-dz))
+                    movelist.append(self.position_after_move_as_tuple(x,y,-dz,-dz))
                     if self.choose_square(x-dz,y-dz,board) != 0:
                         unblockeddiagonals[3] = False    
                 else:      
@@ -780,28 +802,28 @@ class Shakki:
         for diff in range(1,n):
             if unblockedfiles[0]:
                 if self.square_is_in_bounds(x+diff,y):
-                    movelist.append(self.position_after_move_as_UCI(x,y,diff,0)) 
+                    movelist.append(self.position_after_move_as_tuple(x,y,diff,0)) 
                     if self.choose_square(x+diff,y,board) != 0:
                         unblockedfiles[0] = False
                 else:
                     unblockedfiles[0] = False
             if unblockedfiles[1]:
                 if self.square_is_in_bounds(x,y-diff):
-                    movelist.append(self.position_after_move_as_UCI(x,y,0,-diff)) 
+                    movelist.append(self.position_after_move_as_tuple(x,y,0,-diff)) 
                     if self.choose_square(x,y-diff,board) != 0:
                         unblockedfiles[1] = False
                 else:
                     unblockedfiles[1] = False
             if unblockedfiles[2]:
                 if self.square_is_in_bounds(x-diff,y):
-                    movelist.append(self.position_after_move_as_UCI(x,y,-diff,0)) 
+                    movelist.append(self.position_after_move_as_tuple(x,y,-diff,0)) 
                     if self.choose_square(x-diff,y,board) != 0:
                         unblockedfiles[2] = False
                 else:
                     unblockedfiles[2] = False
             if unblockedfiles[3]:
                 if self.square_is_in_bounds(x,y+diff):
-                    movelist.append(self.position_after_move_as_UCI(x,y,0,diff))  
+                    movelist.append(self.position_after_move_as_tuple(x,y,0,diff))  
                     if self.choose_square(x,y+diff,board) != 0:
                         unblockedfiles[3] = False
                 else:
@@ -819,21 +841,21 @@ class Shakki:
     def king_control(self,x,y):
         movelist = []
         if self.square_is_in_bounds(x+1,y):
-            movelist.append(self.position_after_move_as_UCI(x,y,1,0))
+            movelist.append(self.position_after_move_as_tuple(x,y,1,0))
         if self.square_is_in_bounds(x+1,y-1):
-            movelist.append(self.position_after_move_as_UCI(x,y,1,-1))
+            movelist.append(self.position_after_move_as_tuple(x,y,1,-1))
         if self.square_is_in_bounds(x+1,y+1):
-            movelist.append(self.position_after_move_as_UCI(x,y,1,1))
+            movelist.append(self.position_after_move_as_tuple(x,y,1,1))
         if self.square_is_in_bounds(x,y+1):
-            movelist.append(self.position_after_move_as_UCI(x,y,0,1))
+            movelist.append(self.position_after_move_as_tuple(x,y,0,1))
         if self.square_is_in_bounds(x,y-1):
-            movelist.append(self.position_after_move_as_UCI(x,y,0,-1))
+            movelist.append(self.position_after_move_as_tuple(x,y,0,-1))
         if self.square_is_in_bounds(x-1,y):
-            movelist.append(self.position_after_move_as_UCI(x,y,-1,0))
+            movelist.append(self.position_after_move_as_tuple(x,y,-1,0))
         if self.square_is_in_bounds(x-1,y-1):
-            movelist.append(self.position_after_move_as_UCI(x,y,-1,-1))
+            movelist.append(self.position_after_move_as_tuple(x,y,-1,-1))
         if self.square_is_in_bounds(x-1,y+1):
-            movelist.append(self.position_after_move_as_UCI(x,y,-1,1))
+            movelist.append(self.position_after_move_as_tuple(x,y,-1,1))
         return movelist
     
     def square_is_in_bounds(self,x,y):
@@ -856,7 +878,5 @@ class Shakki:
         style_dict_UCI_file = { 0:"8",1:"7",2:"6",3: "5",4:"4",5:"3",6:"2",7:"1"}
         return style_dict_UCI_row[y] + style_dict_UCI_file[x] + style_dict_UCI_row[y+dy] + style_dict_UCI_file[x+dx]
     
-    def position_after_move_as_UCI(self,x,y,dx,dy):
-        style_dict_UCI_row = { 0:"a",1:"b",2:"c",3: "d",4:"e",5:"f",6:"g",7:"h"}
-        style_dict_UCI_file = { 0:"8",1:"7",2:"6",3: "5",4:"4",5:"3",6:"2",7:"1"}
-        return style_dict_UCI_row[y+dy] + style_dict_UCI_file[x+dx]
+    def position_after_move_as_tuple(self,x,y,dx,dy):
+        return(x+dx,y+dy)
