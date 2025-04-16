@@ -763,36 +763,14 @@ class Shakki:
         n = len(board)
         unblockeddiagonals = [True,True,True,True]
         for dz in range(1,n):
-            if unblockeddiagonals[0]:
-                if self.square_is_in_bounds(x+dz,y+dz):
-                    movelist.append(self.position_after_move_as_tuple(x,y,dz,dz))
-                    if self.choose_square(x+dz,y+dz,board) != 0:
-                        unblockeddiagonals[0] = False             
-                else:
-                    unblockeddiagonals[0] = False
-            if unblockeddiagonals[1]:
-                if self.square_is_in_bounds(x+dz,y-dz):
-                    movelist.append(self.position_after_move_as_tuple(x,y,dz,-dz))
-                    if self.choose_square(x+dz,y-dz,board) != 0:
-                        unblockeddiagonals[1] = False    
-                else:
-                    unblockeddiagonals[1] = False
-            if unblockeddiagonals[2]:
-                if self.square_is_in_bounds(x-dz,y+dz):
-                    movelist.append(self.position_after_move_as_tuple(x,y,-dz,dz))
-                    if self.choose_square(x-dz,y+dz,board) != 0:
-                        unblockeddiagonals[2] = False    
-                else:
-                    unblockeddiagonals[2] = False
-            if unblockeddiagonals[3]:
-                if self.square_is_in_bounds(x-dz,y-dz):
-                    movelist.append(self.position_after_move_as_tuple(x,y,-dz,-dz))
-                    if self.choose_square(x-dz,y-dz,board) != 0:
-                        unblockeddiagonals[3] = False    
-                else:      
-                    unblockeddiagonals[3] = False
-            else:
-                break
+            if self.square_is_in_bounds(x+dz,y+dz):
+                movelist.append(self.position_after_move_as_tuple(x,y,dz,dz))
+            if self.square_is_in_bounds(x+dz,y-dz):
+                movelist.append(self.position_after_move_as_tuple(x,y,dz,-dz))
+            if self.square_is_in_bounds(x-dz,y+dz):
+                movelist.append(self.position_after_move_as_tuple(x,y,-dz,dz))
+            if self.square_is_in_bounds(x-dz,y-dz):
+                movelist.append(self.position_after_move_as_tuple(x,y,-dz,-dz)) 
         return movelist
     
     def rook_control(self,x,y,board):
