@@ -12,7 +12,7 @@ class Shakki:
                       [5,3,4,6,7,4,3,5]]
         self.whitetomove = True
         self.gamestatus = "WHITE TO MOVE"
-        self.draw_by_repetition = {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 0":1}
+        self.draw_by_repetition = {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w":1}
 
     def move_like_pawn(self, x,y,dx,dy,board,mover=None):
         if mover == None:
@@ -512,15 +512,19 @@ class Shakki:
             rval += "\n"
         return rval
     
-    def get_board_as_FEN(self):
+    def get_board_as_FEN(self,board = [], mover = None):
+        if mover == None:
+            mover = self.whitetomove
+        if board == []:
+            board = self.lauta
         rval = ""
         style_dict_FEN = {1:"P",3:"N",4:"B",5:"R",6:"Q",7:"K",-1:"p",-3:"n",-4:"b",-5:"r",-6:"q",-7:"k"}
-        n = len(self.lauta)
+        n = len(board)
         for i in range(n):
             counter = 0
             for j in range(n):
                 if  self.lauta[i][j] != 0:
-                    rval += style_dict_FEN[self.lauta[i][j]]
+                    rval += style_dict_FEN[board[i][j]]
                     if counter != 0:
                         rval += str(counter)
                         counter = 0
@@ -530,10 +534,10 @@ class Shakki:
                 rval += str(counter)
             if i != 7:
                 rval += "/"
-        if self.whitetomove:
-            rval += " w - - 0 0" 
+        if mover:
+            rval += " w" 
         else:
-            rval += " b - - 0 0"
+            rval += " b"
         
         return rval
 
@@ -882,4 +886,4 @@ class Shakki:
         return style_dict_UCI_row[y] + style_dict_UCI_file[x] + style_dict_UCI_row[y+dy] + style_dict_UCI_file[x+dx]
     
     def position_after_move_as_tuple(self,x,y,dx,dy):
-        return(x+dx,y+dy)
+        return(x+dx,y+dy)    
