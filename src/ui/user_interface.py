@@ -20,7 +20,7 @@ class UI():
         self.peli = Shakki()
         self.depth = 2
         self.eng = Engine(self.depth,self.peli)
-        self.humanturn = True
+        self.game_over = False
 
         self.chosen_piece = []
         self.chosen_piece_original_position = None
@@ -50,39 +50,43 @@ class UI():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 exit()
-            if self.peli.whitetomove:
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        pos_on_mbdown = pygame.mouse.get_pos()
-                        self.chosen_piece = self.all_sprites.get_sprites_at(pos_on_mbdown)
-                        if self.chosen_piece == []:
-                            continue
-                        if self.chosen_piece[0].color == "w" and self.peli.whitetomove:
-                            self.chosen_piece_original_position = pos_on_mbdown
-                        if self.chosen_piece[0].color == "b" and not self.peli.whitetomove:
-                            self.chosen_piece_original_position = pos_on_mbdown
+            if self.peli.gamestatus in {"DRAW BY REPETITION" ,"CHECKMATE","STALEMATE"}:
+                self.game_over = True
+            if not self.game_over:
+                if self.peli.whitetomove:
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        if event.button == 1:
+                            pos_on_mbdown = pygame.mouse.get_pos()
+                            self.chosen_piece = self.all_sprites.get_sprites_at(pos_on_mbdown)
+                            if self.chosen_piece == []:
+                                continue
+                            if self.chosen_piece[0].color == "w" and self.peli.whitetomove:
+                                self.chosen_piece_original_position = pos_on_mbdown
+                            if self.chosen_piece[0].color == "b" and not self.peli.whitetomove:
+                                self.chosen_piece_original_position = pos_on_mbdown
 
-                if event.type == pygame.MOUSEBUTTONUP:
-                    if event.button == 1:
-                        pos_on_mbup = pygame.mouse.get_pos()
-                        if self.chosen_piece != []:
-                                if self.chosen_piece_original_position != None:
-                                    y_np = self.downscale(pos_on_mbup[0])
-                                    x_np = self.downscale(pos_on_mbup[1])
-                                    y_op = (self.downscale(self.chosen_piece_original_position[0]))
-                                    x_op = (self.downscale(self.chosen_piece_original_position[1]))
-                                    dx = x_np-x_op
-                                    dy = y_np-y_op                          
-                                    self.peli.execute_move(x_op, y_op,dx,dy)
-                                    pygame.display.set_caption(self.peli.gamestatus)   
-                                    self.set_board()  
-                                self.chosen_piece_original_position = None
-                                self.chosen_piece = []
-            else:        
-                self.eng.make_move()
-                pygame.display.set_caption(self.peli.gamestatus)
-                self.set_board()
-                
+                    if event.type == pygame.MOUSEBUTTONUP:
+                        if event.button == 1:
+                            pos_on_mbup = pygame.mouse.get_pos()
+                            if self.chosen_piece != []:
+                                    if self.chosen_piece_original_position != None:
+                                        y_np = self.downscale(pos_on_mbup[0])
+                                        x_np = self.downscale(pos_on_mbup[1])
+                                        y_op = (self.downscale(self.chosen_piece_original_position[0]))
+                                        x_op = (self.downscale(self.chosen_piece_original_position[1]))
+                                        dx = x_np-x_op
+                                        dy = y_np-y_op                          
+                                        self.peli.execute_move(x_op, y_op,dx,dy)
+                                        pygame.display.set_caption(self.peli.gamestatus)   
+                                        self.set_board()  
+                                    self.chosen_piece_original_position = None
+                                    self.chosen_piece = []
+                                    break
+                else:          
+                    self.eng.make_move()
+                    pygame.display.set_caption(self.peli.gamestatus)
+                    self.set_board()
+                    
     
     def draw_board(self):
         self.screen.fill((0,0,0))        
