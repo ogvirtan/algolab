@@ -19,41 +19,11 @@ class Engine:
                             [1,2,3,3,3,3,2,1],
                             [1,2,2,2,2,2,2,1],
                             [1,1,1,1,1,1,1,1]]
-    
-    def set_board(self, board_position:str):
-        print(f"Set board to {board_position}!")
-        self.peli.set_board_FEN(board_position)
 
     def make_move(self):
-        legal_moves = self.generate_movelist(self.peli.lauta,self.peli.whitetomove)
-        choice_as_uci = self.choose_move()
-        print(f"I found {len(legal_moves)} legal moves: {', '.join(legal_moves)}")
+        choice_as_uci = self.alphabeta(self.peli.lauta,self.depth,float("-inf"),float("inf"),self.peli.whitetomove)[1]
         choice = self.move_as_grid_coordinates(choice_as_uci)
         self.peli.execute_move(choice[0],choice[1],choice[2],choice[3])
-        return choice_as_uci
-
-    def main_loop(self):
-
-        while True:
-            opponent_move = input()
-            if opponent_move.startswith("BOARD:"):
-                passtogame = opponent_move[len("BOARD:"):]
-                self.set_board(passtogame)
-            elif opponent_move.startswith("RESET:"):
-                self.peli.__init__()
-                print("Board reset!")
-            elif opponent_move.startswith("PLAY:"):
-                choice = self.make_move()[:4]
-                print(f"I chose {choice}!")
-                print(f"MOVE:{choice}")
-            elif opponent_move.startswith("MOVE:"):
-                print(opponent_move)
-                move = self.move_as_grid_coordinates(opponent_move[len("MOVE:"):])
-                self.peli.execute_move(move[0],move[1],move[2],move[3])
-                print(f"Received move: {move[0],move[1],move[2],move[3]}")
-            else:
-                print(f"Unknown tag: {opponent_move}")
-                break
 
     def move_as_grid_coordinates(self, uci_move:str):
         quad = [0,0,0,0]
@@ -111,19 +81,13 @@ class Engine:
                     best_move = siirto
             if best_move == None:
                 best_move = siirtolista[0]
-            return value, best_move
-    
-    def choose_move(self):
-        alpha = float("-inf")
-        beta = float("inf")
-        
-        return self.alphabeta(self.peli.lauta,self.depth,alpha,beta,self.peli.whitetomove)[1]
+            return value, best_move       
 
     def generate_movelist(self,board, maxplayer):
-        sorted = self.peli.return_move_list(board,maxplayer)
-        sorted.sort(key=len, reverse = True)
+        sortedlist = self.peli.return_move_list(board,maxplayer)
+        sortedlist.sort(key=len, reverse = True)
 
-        return sorted
+        return sortedlist
     
     def generate_board(self,board,move):
         return self.peli.return_moved_board(board,move)
