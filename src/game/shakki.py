@@ -518,20 +518,29 @@ class Shakki:
             mvlist.extend(self.can_king_movelist(x,y,board,mover))
         return mvlist
     
-    def preview_for_movelist(self,x,y,dx,dy,board=[],mover= None):
-        if mover == None:
-            mover = self.whitetomove
-        if board == []:
-            board = self.lauta
+    def preview_for_movelist(self,x,y,dx,dy,board,mover):
         if self.check_move_legality(x,y,dx,dy,board,mover):
-            dupeboard = copy.deepcopy(board)
-            dupeboard[x+dx][y+dy] = dupeboard[x][y]
-            dupeboard[x][y] = 0
-            self.promote_pawns(dupeboard)
-            if self.king_threatened(dupeboard,mover):
+            bulldozed_sqr = board[x+dx][y+dy]
+            piece = board[x][y]
+            if piece == 1 and mover:
+                if x+dx == 7:
+                    board[x+dx][y+dy] == 6
+            elif piece == -1 and not mover:
+                if x+dx == 0:
+                    board[x+dx][y+dy] == -6
+            else:
+                board[x+dx][y+dy] = piece
+            board[x][y] = 0
+            if self.king_threatened(board,mover):
+                board[x][y] = piece
+                board[x+dx][y+dy] = bulldozed_sqr
                 return False, False
-            if self.king_threatened(dupeboard, not mover):
+            if self.king_threatened(board, not mover):
+                board[x][y] = piece
+                board[x+dx][y+dy] = bulldozed_sqr
                 return True, True
+            board[x][y] = piece
+            board[x+dx][y+dy] = bulldozed_sqr
             return True, False
         return False, False
 
@@ -696,7 +705,7 @@ class Shakki:
     
     def return_control_list(self,board,mover):
         all_controlled_squares = []
-        n = len(self.lauta)
+        n = len(board)
         for x in range(n):
             for y in range(n):
                 piecenmbr = self.choose_square(x,y,board)
@@ -797,7 +806,7 @@ class Shakki:
                         unblockeddiagonals[3] = False    
                 else:      
                     unblockeddiagonals[3] = False
-            else:
+            if True not in unblockeddiagonals:
                 break
         return movelist
     
@@ -834,7 +843,7 @@ class Shakki:
                         unblockedfiles[3] = False
                 else:
                     unblockedfiles[3] = False
-            else:
+            if True not in unblockedfiles:
                 break
         return movelist
     
@@ -868,17 +877,6 @@ class Shakki:
         if x>=0 and x<8 and y>=0 and y<8:
             return True
         return False
-    
-    def return_moved_board(self,board,move):
-        x = move[0]
-        y = move[1]
-        dx = move[2]
-        dy = move[3]
-        dupeboard = copy.deepcopy(board)
-        dupeboard[x+dx][y+dy] = dupeboard[x][y]
-        dupeboard[x][y] = 0
-        self.promote_pawns(dupeboard)
-        return dupeboard    
     
     def move_as_UCI(self,x,y,dx,dy,checked=False,sc=""):
         style_dict_UCI_row = { 0:"a",1:"b",2:"c",3: "d",4:"e",5:"f",6:"g",7:"h"}

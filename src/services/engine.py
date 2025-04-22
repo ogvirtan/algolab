@@ -1,5 +1,6 @@
 import os
 import sys
+import copy
 from game.shakki import Shakki
 
 
@@ -21,7 +22,8 @@ class Engine:
                             [1,1,1,1,1,1,1,1]]
 
     def make_move(self):
-        choice_as_uci = self.alphabeta(self.peli.lauta,self.depth,float("-inf"),float("inf"),self.peli.whitetomove)[1]
+        dupeboard = copy.deepcopy(self.peli.lauta)
+        choice_as_uci = self.alphabeta(dupeboard,self.depth,float("-inf"),float("inf"),self.peli.whitetomove)[1]
         choice = self.move_as_grid_coordinates(choice_as_uci)
         self.peli.execute_move(choice[0],choice[1],choice[2],choice[3])
 
@@ -58,22 +60,37 @@ class Engine:
         if maximizing_player:
             value = float("-inf")
             for siirto in siirtolista:
-                newboard = self.generate_board(lauta,self.move_as_grid_coordinates(siirto))
+                siirtodata = self.move_as_grid_coordinates(siirto)
+                x = siirtodata[0]
+                y = siirtodata[1]
+                dx = siirtodata[2]
+                dy = siirtodata[3]
+                piece = lauta[x][y]
+                target_sqr = lauta[x+dx][y+dy]
+                newboard = self.generate_board(x,y,dx,dy,lauta)
                 value = max(value,self.alphabeta(newboard,depth-1,alpha,beta,False)[0])
+                self.revert_board(x,y,dx,dy,target_sqr,piece,lauta)
                 if value >= beta:
                     break
                 if value > alpha:
                     alpha = value
-                    best_move = siirto
-                
+                    best_move = siirto    
             if best_move == None:
                 best_move = siirtolista[0]
             return value, best_move
         else:
             value = float("inf")
             for siirto in siirtolista:
-                newboard = self.generate_board(lauta,self.move_as_grid_coordinates(siirto))
+                siirtodata = self.move_as_grid_coordinates(siirto)
+                x = siirtodata[0]
+                y = siirtodata[1]
+                dx = siirtodata[2]
+                dy = siirtodata[3]
+                piece = lauta[x][y]
+                target_sqr = lauta[x+dx][y+dy]
+                newboard = self.generate_board(x,y,dx,dy,lauta)
                 value = min(value,self.alphabeta(newboard,depth-1,alpha,beta,True)[0])
+                self.revert_board(x,y,dx,dy,target_sqr,piece,lauta)
                 if value <= alpha:
                     break
                 if value < beta:
@@ -89,9 +106,25 @@ class Engine:
 
         return sortedlist
     
-    def generate_board(self,board,move):
-        return self.peli.return_moved_board(board,move)
+    def generate_board(self,x,y,dx,dy,board):
+        piece = board[x][y]
+        if piece == 1:
+            if x+dx == 7:
+                board[x+dx][y+dy] == 6
+        elif piece == -1:
+            if x+dx == 0:
+                board[x+dx][y+dy] == -6
+        else:
+            board[x+dx][y+dy] = piece
+        board[x][y] = 0
+
+        return board
     
+    def revert_board(self,x,y,dx,dy,target_sqr, piece ,board):
+        board[x][y] = piece
+        board[x+dx][y+dy] = target_sqr
+        return board
+
     def return_board_repetitions(self,board):
         rval = self.peli.draw_by_repetition.get(self.peli.get_board_as_FEN(board))
         if rval == None:
@@ -135,4 +168,5 @@ class Engine:
         if mat_diff == 0:
             return pch/100
         
-        return mat_diff+pch/100            
+        return mat_diff+pch/100  
+                  

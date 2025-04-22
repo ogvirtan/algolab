@@ -767,3 +767,53 @@ class TestShakki(unittest.TestCase):
                             [5,3,4,6,7,5,3,5]])
         self.assertEqual(self.peli.king_threatened(self.peli.lauta),True)
         self.assertEqual(self.peli.check_for_having_no_moves(),False)
+    
+    def test_square_threatened_edges_white(self):
+        self.peli.set_board([[0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,-7,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,7,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0]])
+        for i in range(len(self.peli.lauta)):
+            for j in range(len(self.peli.lauta)):
+                if j == 0 or j == 7:
+                    self.assertEqual(self.peli.square_threatened(i,j), False)
+                if i == 0 or i == 7:
+                    self.assertEqual(self.peli.square_threatened(i,j), False)
+    
+    def test_square_threatened_edges_black(self):
+        self.peli.change_mover()
+        self.peli.set_board([[0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,-7,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,7,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0]])
+        for i in range(len(self.peli.lauta)):
+            for j in range(len(self.peli.lauta)):
+                if j == 0 or j == 7:
+                    self.assertEqual(self.peli.square_threatened(i,j), False)
+                if i == 0 or i == 7:
+                    self.assertEqual(self.peli.square_threatened(i,j), False)
+
+    def test_square_threatened_edges_black_out_of_turn(self):
+        self.peli.change_mover()
+        self.peli.set_board([[0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,-7,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,7,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0]])
+        for i in range(len(self.peli.lauta)):
+            for j in range(len(self.peli.lauta)):
+                if j == 0 or j == 7:
+                    self.assertEqual(self.peli.square_threatened(i,j,self.peli.lauta, True), False)
+                if i == 0 or i == 7:
+                    self.assertEqual(self.peli.square_threatened(i,j,self.peli.lauta, True), False)
