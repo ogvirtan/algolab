@@ -9,7 +9,7 @@ sys.setrecursionlimit(10**6)
 dirname = os.path.dirname(__file__)
 
 class Engine:
-    def __init__(self,depth = 2, shakki=Shakki()):
+    def __init__(self,depth = 3, shakki=Shakki()):
         self.peli = shakki
         self.depth = depth
 
@@ -72,14 +72,23 @@ class Engine:
                                 [-10,  0,  5,  0,  0,  0,  0,-10],
                                 [-20,-10,-10, -5, -5,-10,-10,-20]]
 
-        self.king_pos_table = [[-30,-40,-40,-50,-50,-40,-40,-30,],
-                                [-30,-40,-40,-50,-50,-40,-40,-30,],
-                                [-30,-40,-40,-50,-50,-40,-40,-30,],
-                                [-30,-40,-40,-50,-50,-40,-40,-30,],
-                                [-20,-30,-30,-40,-40,-30,-30,-20],
-                                [-10,-20,-20,-20,-20,-20,-20,-10],
-                                [ 20, 20,  0,  0,  0,  0, 20, 20],
-                                [20, 30, 10,  0,  0, 10, 30, 20]]
+        self.king_pos_table_mid_game = [[-30,-40,-40,-50,-50,-40,-40,-30,],
+                                        [-30,-40,-40,-50,-50,-40,-40,-30,],
+                                        [-30,-40,-40,-50,-50,-40,-40,-30,],
+                                        [-30,-40,-40,-50,-50,-40,-40,-30,],
+                                        [-20,-30,-30,-40,-40,-30,-30,-20],
+                                        [-10,-20,-20,-20,-20,-20,-20,-10],
+                                        [ 20, 20,  0,  0,  0,  0, 20, 20],
+                                        [20, 30, 10,  0,  0, 10, 30, 20]]
+    
+        self.king_pos_table_end_game = [[-50,-40,-30,-20,-20,-30,-40,-50],
+                                        [-30,-20,-10,  0,  0,-10,-20,-30],
+                                        [-30,-10, 20, 30, 30, 20,-10,-30],
+                                        [-30,-10, 30, 40, 40, 30,-10,-30],
+                                        [-30,-10, 30, 40, 40, 30,-10,-30],
+                                        [-30,-10, 20, 30, 30, 20,-10,-30],
+                                        [-30,-30,  0,  0,  0,  0,-30,-30],
+                                        [-50,-30,-30,-30,-30,-30,-30,-50]]
 
     def make_move(self):
         self.generate_supporting_lists()
@@ -1039,6 +1048,7 @@ class Engine:
         
     def heuristic_function(self, poslist, piece_eval):
         summa = 0
+        no_queens = True
         for item in poslist:
             piece = item[0]
             i = item[1]
@@ -1052,9 +1062,8 @@ class Engine:
             elif piece == 5:
                 summa += self.rook_pos_table[i][j]
             elif piece == 6:
+                no_queens = False
                 summa += self.queen_pos_table[i][j]
-            elif piece == 7:
-                summa += self.king_pos_table[i][j]
             elif piece == -1:
                 summa += -self.pawn_pos_table[-(i+1)][-(j+1)]
             elif piece == -3:
@@ -1064,9 +1073,15 @@ class Engine:
             elif piece == -5:
                 summa  += -self.rook_pos_table[-(i+1)][-(j+1)]
             elif piece == -6:
+                no_queens = False
                 summa += -self.queen_pos_table[-(i+1)][-(j+1)]
-            elif piece == -7:
-                summa += -self.king_pos_table[-(i+1)][-(j+1)]
+        if no_queens:
+            king_pos_table = self.king_pos_table_end_game
+        else:
+            king_pos_table = self.king_pos_table_mid_game
+
+        summa += king_pos_table[self.white_king_pos[0]][self.white_king_pos[1]]
+        summa += -king_pos_table[-(self.black_king_pos[0]+1)][-(self.black_king_pos[1]+1)]
 
         return summa+piece_eval
     
