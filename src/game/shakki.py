@@ -190,48 +190,50 @@ class Shakki:
             board = self.lauta
         n = len(board)
         if mover == None:
-            mover = self.whitetomove        
+            mover = self.whitetomove 
+        if x == None or y == None:
+            return False       
         if mover:
             colormod = -1
             #check for pawns
-            if self.choose_square(x-1,y-1,board) != None:
+            if self.square_is_in_bounds(x-1,y-1,board):
                 if self.choose_square(x-1,y-1,board) == colormod*1:
                     return True
-            if self.choose_square(x-1,y+1,board) != None:
+            if self.square_is_in_bounds(x-1,y+1,board):
                 if self.choose_square(x-1,y+1,board) == colormod*1:
                     return True
         else:
             colormod = 1
             #check for pawns
-            if self.choose_square(x+1,y-1,board) != None:
+            if self.square_is_in_bounds(x+1,y-1,board):
                 if self.choose_square(x+1,y-1,board) == colormod*1:
                     return True
-            if self.choose_square(x+1,y+1,board) != None:
+            if self.square_is_in_bounds(x+1,y+1,board):
                 if self.choose_square(x+1,y+1,board) == colormod*1:
                     return True
         #check for knights
-        if self.choose_square(x-2,y-1,board) != None:
+        if self.square_is_in_bounds(x-2,y-1,board):
             if self.choose_square(x-2,y-1,board) == colormod*3:
                 return True 
-        if self.choose_square(x-2,y+1,board) != None:        
+        if self.square_is_in_bounds(x-2,y+1,board):        
             if self.choose_square(x-2,y+1,board) == colormod*3:
                 return True 
-        if self.choose_square(x-1,y-2,board) != None:       
+        if self.square_is_in_bounds(x-1,y-2,board):       
             if self.choose_square(x-1,y-2,board) == colormod*3:
                 return True 
-        if self.choose_square(x-1,y+2,board) != None:
+        if self.square_is_in_bounds(x-1,y+2,board):
             if self.choose_square(x-1,y+2,board) == colormod*3:
                 return True 
-        if self.choose_square(x+2,y-1,board) != None:
+        if self.square_is_in_bounds(x+2,y-1,board):
             if self.choose_square(x+2,y-1,board) == colormod*3:
                 return True 
-        if self.choose_square(x+2,y+1,board) != None:
+        if self.square_is_in_bounds(x+2,y+1,board):
             if self.choose_square(x+2,y+1,board) == colormod*3:
                 return True 
-        if self.choose_square(x+1,y-2,board) != None:
+        if self.square_is_in_bounds(x+1,y-2,board):
             if self.choose_square(x+1,y-2,board) == colormod*3:
                 return True 
-        if self.choose_square(x+1,y+2,board) != None:
+        if self.square_is_in_bounds(x+1,y+2,board):
             if self.choose_square(x+1,y+2,board) == colormod*3:
                 return True    
         unblockedfiles = [True,True,True,True]
@@ -517,374 +519,285 @@ class Shakki:
         elif abs(piecenmbr) == 7:
             mvlist.extend(self.can_king_movelist(x,y,board,mover))
         return mvlist
-    
-    def preview_for_movelist(self,x,y,dx,dy,board,mover):
-        if self.check_move_legality(x,y,dx,dy,board,mover):
-            bulldozed_sqr = board[x+dx][y+dy]
-            piece = board[x][y]
-            if piece == 1 and mover:
-                if x+dx == 7:
-                    board[x+dx][y+dy] == 6
-            elif piece == -1 and not mover:
-                if x+dx == 0:
-                    board[x+dx][y+dy] == -6
-            else:
-                board[x+dx][y+dy] = piece
-            board[x][y] = 0
-            if self.king_threatened(board,mover):
-                board[x][y] = piece
-                board[x+dx][y+dy] = bulldozed_sqr
-                return False, False
-            if self.king_threatened(board, not mover):
-                board[x][y] = piece
-                board[x+dx][y+dy] = bulldozed_sqr
-                return True, True
-            board[x][y] = piece
-            board[x+dx][y+dy] = bulldozed_sqr
-            return True, False
-        return False, False
 
     def can_pawn_movelist(self,x,y,piecenmbr,board,mover):
         movelist = []
-        sc = ""
         if piecenmbr == 1:
-            if x == 1:
-                sc = "q"
-            m1 = self.preview_for_movelist(x,y,-1,1,board,mover)
-            m2 = self.preview_for_movelist(x,y,-1,-1,board,mover)
-            m3 = self.preview_for_movelist(x,y,-1,0,board,mover)
-            m4 = self.preview_for_movelist(x,y,-2,0,board,mover)
-            if m1[0]:
-                movelist.append((self.move_as_UCI(x,y,-1,1,m1[1],sc)))
-            if m2[0]:
-                movelist.append((self.move_as_UCI(x,y,-1,-1,m2[1],sc)))
-            if m3[0]:
-                movelist.append((self.move_as_UCI(x,y,-1,0,m3[1],sc)))
-            if m4[0]:
-                movelist.append((self.move_as_UCI(x,y,-2,0,m4[1])))
-                
+            if self.preview_move(x,y,-1,1,board,mover):
+                movelist.append((self.move_as_UCI(x,y,-1,1)))
+            if self.preview_move(x,y,-1,-1,board,mover):
+                movelist.append((self.move_as_UCI(x,y,-1,-1)))
+            if  self.preview_move(x,y,-1,0,board,mover):
+                movelist.append((self.move_as_UCI(x,y,-1,0)))
+            if self.preview_move(x,y,-2,0,board,mover):
+                movelist.append((self.move_as_UCI(x,y,-2,0)))                
         if piecenmbr == -1:
-            if x == 6:
-                sc ="q"
-            m1 = self.preview_for_movelist(x,y,1,1,board,mover)
-            m2 = self.preview_for_movelist(x,y,1,-1,board,mover)
-            m3 = self.preview_for_movelist(x,y,1,0,board,mover)
-            m4 = self.preview_for_movelist(x,y,2,0,board,mover)
-            if m1[0]:
-                movelist.append((self.move_as_UCI(x,y,1,1,m1[1],sc)))
-            if m2[0]:
-                movelist.append((self.move_as_UCI(x,y,1,-1,m2[1],sc)))
-            if m3[0]:
-                movelist.append((self.move_as_UCI(x,y,1,0,m3[1],sc)))
-            if m4[0]:
-                movelist.append((self.move_as_UCI(x,y,2,0,m4[1])))
+            if self.preview_move(x,y,1,1,board,mover):
+                movelist.append((self.move_as_UCI(x,y,1,1)))
+            if self.preview_move(x,y,1,-1,board,mover):
+                movelist.append((self.move_as_UCI(x,y,1,-1)))
+            if self.preview_move(x,y,1,0,board,mover):
+                movelist.append((self.move_as_UCI(x,y,1,0)))
+            if self.preview_move(x,y,2,0,board,mover):
+                movelist.append((self.move_as_UCI(x,y,2,0)))
 
         return movelist
 
     def can_knight_movelist(self,x,y,board,mover):
         movelist = []
-        m1 = self.preview_for_movelist(x,y,-2,-1,board,mover)
-        m2 = self.preview_for_movelist(x,y,-2,1,board,mover)
-        m3 = self.preview_for_movelist(x,y,-1,-2,board,mover)
-        m4 = self.preview_for_movelist(x,y,-1,2,board,mover)
-        m5 = self.preview_for_movelist(x,y,2,1,board,mover)
-        m6 = self.preview_for_movelist(x,y,2,-1,board,mover)
-        m7 = self.preview_for_movelist(x,y,1,-2,board,mover)
-        m8 = self.preview_for_movelist(x,y,1,2,board,mover)
-        if m1[0]:
-            movelist.append(self.move_as_UCI(x,y,-2,-1,m1[1]))
-        if m2[0]:
-            movelist.append(self.move_as_UCI(x,y,-2,1,m2[1]))
-        if m3[0]:
-            movelist.append(self.move_as_UCI(x,y,-1,-2, m3[1]))
-        if m4[0]:
-            movelist.append(self.move_as_UCI(x,y,-1,2, m4[1]))
-        if m5[0]:
-            movelist.append(self.move_as_UCI(x,y,2,1,m5[1]))
-        if m6[0]:
-            movelist.append(self.move_as_UCI(x,y,2,-1,m6[1]))
-        if  m7[0]:
-            movelist.append(self.move_as_UCI(x,y,1,-2,m7[1]))
-        if m8[0]:
-            movelist.append(self.move_as_UCI(x,y,1,2,m8[1]))
+        if self.preview_move(x,y,-2,-1,board,mover):
+            movelist.append(self.move_as_UCI(x,y,-2,-1))
+        if self.preview_move(x,y,-2,1,board,mover):
+            movelist.append(self.move_as_UCI(x,y,-2,1))
+        if  self.preview_move(x,y,-1,-2,board,mover):
+            movelist.append(self.move_as_UCI(x,y,-1,-2))
+        if  self.preview_move(x,y,-1,2,board,mover):
+            movelist.append(self.move_as_UCI(x,y,-1,2))
+        if self.preview_move(x,y,2,1,board,mover):
+            movelist.append(self.move_as_UCI(x,y,2,1))
+        if self.preview_move(x,y,2,-1,board,mover):
+            movelist.append(self.move_as_UCI(x,y,2,-1))
+        if self.preview_move(x,y,1,-2,board,mover):
+            movelist.append(self.move_as_UCI(x,y,1,-2))
+        if self.preview_move(x,y,1,2,board,mover):
+            movelist.append(self.move_as_UCI(x,y,1,2))
         return movelist
 
     def can_bishop_movelist(self,x,y,board,mover):
         movelist = []
         n = len(board)
         for dz in range(1,n):
-            m1 = self.preview_for_movelist(x,y,dz,dz,board,mover)        
-            if m1[0]:
-                movelist.append(self.move_as_UCI(x,y,dz,dz,m1[1]))   
-            m2 = self.preview_for_movelist(x,y,dz,-dz,board,mover)          
-            if m2[0]:
-                movelist.append(self.move_as_UCI(x,y,dz,-dz,m2[1]))
-            m3 = self.preview_for_movelist(x,y,-dz,dz,board,mover)
-            if m3[0]:
-                movelist.append(self.move_as_UCI(x,y,-dz,dz, m3[1])) 
-            m4 = self.preview_for_movelist(x,y,-dz,-dz,board,mover)
-            if m4[0]:
-                movelist.append(self.move_as_UCI(x,y,-dz,-dz, m4[1]))
+            if self.preview_move(x,y,dz,dz,board,mover):
+                movelist.append(self.move_as_UCI(x,y,dz,dz))           
+            if self.preview_move(x,y,dz,-dz,board,mover) :
+                movelist.append(self.move_as_UCI(x,y,dz,-dz))
+            if self.preview_move(x,y,-dz,dz,board,mover):
+                movelist.append(self.move_as_UCI(x,y,-dz,dz)) 
+            if self.preview_move(x,y,-dz,-dz,board,mover):
+                movelist.append(self.move_as_UCI(x,y,-dz,-dz))
         return movelist
 
     def can_rook_movelist(self,x,y,board,mover):
         movelist = []
-        n = len(self.lauta)
+        n = len(board)
         for diff in range(1,n):
-            m1 = self.preview_for_movelist(x,y,diff,0,board,mover)
-            if m1[0]:
-                movelist.append(self.move_as_UCI(x,y,diff,0,m1[1])) 
-            m2 = self.preview_for_movelist(x,y,0,-diff,board,mover)
-            if m2[0]:
-                movelist.append(self.move_as_UCI(x,y,0,-diff,m2[1])) 
-            m3 = self.preview_for_movelist(x,y,-diff,0,board,mover)
-            if m3[0]:
-                movelist.append(self.move_as_UCI(x,y,-diff,0,m3[1])) 
-            m4 = self.preview_for_movelist(x,y,0,diff,board,mover)
-            if m4[0]:
-                movelist.append(self.move_as_UCI(x,y,0,diff,m4[1]))  
+            if self.preview_move(x,y,diff,0,board,mover):
+                movelist.append(self.move_as_UCI(x,y,diff,0)) 
+            if self.preview_move(x,y,0,-diff,board,mover):
+                movelist.append(self.move_as_UCI(x,y,0,-diff)) 
+            if self.preview_move(x,y,-diff,0,board,mover):
+                movelist.append(self.move_as_UCI(x,y,-diff,0)) 
+            if self.preview_move(x,y,0,diff,board,mover):
+                movelist.append(self.move_as_UCI(x,y,0,diff))  
         return movelist
 
     def can_queen_movelist(self,x,y,board,mover):
-        movelist = []
-        n = len(board)
-        for dz in range(1,n):
-            m1 = self.preview_for_movelist(x,y,dz,0,board,mover)     
-            if m1[0]:
-                movelist.append(self.move_as_UCI(x,y,dz,0,m1[1])) 
-            m2 = self.preview_for_movelist(x,y,0,-dz,board,mover)
-            if m2[0]:
-                movelist.append(self.move_as_UCI(x,y,0,-dz,m2[1])) 
-            m3 = self.preview_for_movelist(x,y,-dz,0,board,mover)
-            if m3[0]:
-                movelist.append(self.move_as_UCI(x,y,-dz,0,m3[1])) 
-            m4 = self.preview_for_movelist(x,y,0,dz,board,mover)          
-            if m4[0]:
-                movelist.append(self.move_as_UCI(x,y,0,dz,m4[1]))
-            m5 = self.preview_for_movelist(x,y,dz,dz,board,mover)
-            if m5[0]:
-                movelist.append(self.move_as_UCI(x,y,dz,dz,m5[1]))     
-            m6 = self.preview_for_movelist(x,y,dz,-dz,board,mover)        
-            if m6[0]:
-                movelist.append(self.move_as_UCI(x,y,dz,-dz,m6[1]))
-            m7 = self.preview_for_movelist(x,y,-dz,dz,board,mover)
-            if m7[0]:
-                movelist.append(self.move_as_UCI(x,y,-dz,dz,m7[1])) 
-            m8 = self.preview_for_movelist(x,y,-dz,-dz,board, mover)
-            if m8[0]:
-                movelist.append(self.move_as_UCI(x,y,-dz,-dz,m8[1]))
+        movelist = []        
+        movelist.extend(self.can_rook_movelist(x,y,board,mover))
+        movelist.extend(self.can_bishop_movelist(x,y,board,mover))
         return movelist
     
     def can_king_movelist(self,x,y,board,mover):
         movelist = []
-        m1 = self.preview_for_movelist(x,y,1,0,board,mover)
-        m2 = self.preview_for_movelist(x,y,1,-1,board,mover)
-        m3 = self.preview_for_movelist(x,y,1,1,board,mover)
-        m4 = self.preview_for_movelist(x,y,0,1,board,mover)
-        m5 = self.preview_for_movelist(x,y,0,-1,board,mover)
-        m6 = self.preview_for_movelist(x,y,-1,0,board,mover)
-        m7 = self.preview_for_movelist(x,y,-1,-1,board,mover)
-        m8 = self.preview_for_movelist(x,y,-1,1,board,mover)
-        if m1[0]:
-            movelist.append(self.move_as_UCI(x,y,1,0,m1[1]))
-        if m2[0]:
-            movelist.append(self.move_as_UCI(x,y,1,-1,m2[1]))
-        if m3[0]:
-            movelist.append(self.move_as_UCI(x,y,1,1,m3[1]))
-        if m4[0]:
-            movelist.append(self.move_as_UCI(x,y,0,1,m4[1]))
-        if m5[0]:
-            movelist.append(self.move_as_UCI(x,y,0,-1,m5[1]))
-        if m6[0]:
-            movelist.append(self.move_as_UCI(x,y,-1,0,m6[1]))
-        if m7[0]:
-            movelist.append(self.move_as_UCI(x,y,-1,-1,m7[1]))
-        if m8[0]:
-            movelist.append(self.move_as_UCI(x,y,-1,1,m8[1]))
+        if self.preview_move(x,y,1,0,board,mover):
+            movelist.append(self.move_as_UCI(x,y,1,0))
+        if self.preview_move(x,y,1,-1,board,mover):
+            movelist.append(self.move_as_UCI(x,y,1,-1))
+        if self.preview_move(x,y,1,1,board,mover):
+            movelist.append(self.move_as_UCI(x,y,1,1))
+        if self.preview_move(x,y,0,1,board,mover):
+            movelist.append(self.move_as_UCI(x,y,0,1))
+        if  self.preview_move(x,y,0,-1,board,mover):
+            movelist.append(self.move_as_UCI(x,y,0,-1))
+        if self.preview_move(x,y,-1,0,board,mover):
+            movelist.append(self.move_as_UCI(x,y,-1,0))
+        if self.preview_move(x,y,-1,-1,board,mover):
+            movelist.append(self.move_as_UCI(x,y,-1,-1))
+        if self.preview_move(x,y,-1,1,board,mover):
+            movelist.append(self.move_as_UCI(x,y,-1,1))
         return movelist
     
-    def return_control_list(self,board,mover):
-        all_controlled_squares = []
-        n = len(board)
-        for x in range(n):
-            for y in range(n):
-                piecenmbr = self.choose_square(x,y,board)
-                if mover:               
-                    if piecenmbr > 0:
-                        temp = self.get_control_for_piece(x,y,piecenmbr,board)
-                        if temp != []:
-                            all_controlled_squares.extend(temp)
-                else:
-                    if piecenmbr < 0:
-                        temp = self.get_control_for_piece(x,y, piecenmbr,board)
-                        if temp != []:
-                            all_controlled_squares.extend(temp)
-        return all_controlled_squares
+    # def return_control_list(self,board,mover):
+    #     all_controlled_squares = []
+    #     n = len(board)
+    #     for x in range(n):
+    #         for y in range(n):
+    #             piecenmbr = self.choose_square(x,y,board)
+    #             if mover:               
+    #                 if piecenmbr > 0:
+    #                     temp = self.get_control_for_piece(x,y,piecenmbr,board)
+    #                     if temp != []:
+    #                         all_controlled_squares.extend(temp)
+    #             else:
+    #                 if piecenmbr < 0:
+    #                     temp = self.get_control_for_piece(x,y, piecenmbr,board)
+    #                     if temp != []:
+    #                         all_controlled_squares.extend(temp)
+    #     return all_controlled_squares
     
-    def get_control_for_piece(self,x,y,piecenmbr,board):
-        threatlist = []
-        if abs(piecenmbr) == 1:
-            threatlist.extend(self.pawn_control(x,y,piecenmbr))
-        elif abs(piecenmbr) == 3:
-            threatlist.extend(self.knight_control(x,y))
-        elif abs(piecenmbr) == 4:
-            threatlist.extend(self.bishop_control(x,y,board))
-        elif abs(piecenmbr) == 5:
-            threatlist.extend(self.rook_control(x,y,board))
-        elif abs(piecenmbr) == 6:
-            threatlist.extend(self.queen_control(x,y,board))
-        elif abs(piecenmbr) == 7:
-            threatlist.extend(self.king_control(x,y))
-        return threatlist
+    # def get_control_for_piece(self,x,y,piecenmbr,board):
+    #     threatlist = []
+    #     if abs(piecenmbr) == 1:
+    #         threatlist.extend(self.pawn_control(x,y,piecenmbr))
+    #     elif abs(piecenmbr) == 3:
+    #         threatlist.extend(self.knight_control(x,y))
+    #     elif abs(piecenmbr) == 4:
+    #         threatlist.extend(self.bishop_control(x,y,board))
+    #     elif abs(piecenmbr) == 5:
+    #         threatlist.extend(self.rook_control(x,y,board))
+    #     elif abs(piecenmbr) == 6:
+    #         threatlist.extend(self.queen_control(x,y,board))
+    #     elif abs(piecenmbr) == 7:
+    #         threatlist.extend(self.king_control(x,y))
+    #     return threatlist
     
-    def pawn_control(self,x,y,piecenmbr):
-        threatlist = []
-        if piecenmbr == 1:
-            if self.square_is_in_bounds(x-1,y+1):
-                threatlist.append((self.position_after_move_as_tuple(x,y,-1,1)))
-            if self.square_is_in_bounds(x-1,y-1):
-                threatlist.append((self.position_after_move_as_tuple(x,y,-1,-1)))
+    # def pawn_control(self,x,y,piecenmbr):
+    #     threatlist = []
+    #     if piecenmbr == 1:
+    #         if self.square_is_in_bounds(x-1,y+1):
+    #             threatlist.append((self.position_after_move_as_tuple(x,y,-1,1)))
+    #         if self.square_is_in_bounds(x-1,y-1):
+    #             threatlist.append((self.position_after_move_as_tuple(x,y,-1,-1)))
                 
-        if piecenmbr == -1:
-            if self.square_is_in_bounds(x+1,y+1):
-                threatlist.append((self.position_after_move_as_tuple(x,y,1,1)))
-            if self.square_is_in_bounds(x+1,y-1):
-                threatlist.append((self.position_after_move_as_tuple(x,y,1,-1)))
+    #     if piecenmbr == -1:
+    #         if self.square_is_in_bounds(x+1,y+1):
+    #             threatlist.append((self.position_after_move_as_tuple(x,y,1,1)))
+    #         if self.square_is_in_bounds(x+1,y-1):
+    #             threatlist.append((self.position_after_move_as_tuple(x,y,1,-1)))
 
-        return threatlist
+    #     return threatlist
     
-    def knight_control(self,x,y):
-        control_list = []
-        if self.square_is_in_bounds(x-2,y-1):
-            control_list.append(self.position_after_move_as_tuple(x,y,-2,-1))
-        if self.square_is_in_bounds(x-2,y+1):
-            control_list.append(self.position_after_move_as_tuple(x,y,-2,1))
-        if self.square_is_in_bounds(x-1,y-2):
-            control_list.append(self.position_after_move_as_tuple(x,y,-1,-2))
-        if self.square_is_in_bounds(x-1,y+2):
-            control_list.append(self.position_after_move_as_tuple(x,y,-1,2))
-        if self.square_is_in_bounds(x+2,y+1):
-            control_list.append(self.position_after_move_as_tuple(x,y,2,1))
-        if self.square_is_in_bounds(x+2,y-1):
-            control_list.append(self.position_after_move_as_tuple(x,y,2,-1))
-        if  self.square_is_in_bounds(x+1,y-2):
-            control_list.append(self.position_after_move_as_tuple(x,y,1,-2))
-        if self.square_is_in_bounds(x+1,y+2):
-            control_list.append(self.position_after_move_as_tuple(x,y,1,2))
-        return control_list
+    # def knight_control(self,x,y):
+    #     control_list = []
+    #     if self.square_is_in_bounds(x-2,y-1):
+    #         control_list.append(self.position_after_move_as_tuple(x,y,-2,-1))
+    #     if self.square_is_in_bounds(x-2,y+1):
+    #         control_list.append(self.position_after_move_as_tuple(x,y,-2,1))
+    #     if self.square_is_in_bounds(x-1,y-2):
+    #         control_list.append(self.position_after_move_as_tuple(x,y,-1,-2))
+    #     if self.square_is_in_bounds(x-1,y+2):
+    #         control_list.append(self.position_after_move_as_tuple(x,y,-1,2))
+    #     if self.square_is_in_bounds(x+2,y+1):
+    #         control_list.append(self.position_after_move_as_tuple(x,y,2,1))
+    #     if self.square_is_in_bounds(x+2,y-1):
+    #         control_list.append(self.position_after_move_as_tuple(x,y,2,-1))
+    #     if  self.square_is_in_bounds(x+1,y-2):
+    #         control_list.append(self.position_after_move_as_tuple(x,y,1,-2))
+    #     if self.square_is_in_bounds(x+1,y+2):
+    #         control_list.append(self.position_after_move_as_tuple(x,y,1,2))
+    #     return control_list
     
-    def bishop_control(self,x,y,board):
-        movelist = []
-        n = len(board)
-        unblockeddiagonals = [True,True,True,True]
-        for dz in range(1,n):
-            if unblockeddiagonals[0]:
-                    if self.square_is_in_bounds(x+dz,y+dz):
-                        movelist.append(self.position_after_move_as_tuple(x,y,dz,dz))
-                        if self.choose_square(x+dz,y+dz,board) != 0:
-                            unblockeddiagonals[0] = False             
-                    else:
-                        unblockeddiagonals[0] = False
-            if unblockeddiagonals[1]:
-                if self.square_is_in_bounds(x+dz,y-dz):
-                    movelist.append(self.position_after_move_as_tuple(x,y,dz,-dz))
-                    if self.choose_square(x+dz,y-dz,board) != 0:
-                        unblockeddiagonals[1] = False    
-                else:
-                    unblockeddiagonals[1] = False
-            if unblockeddiagonals[2]:
-                if self.square_is_in_bounds(x-dz,y+dz):
-                    movelist.append(self.position_after_move_as_tuple(x,y,-dz,dz))
-                    if self.choose_square(x-dz,y+dz,board) != 0:
-                        unblockeddiagonals[2] = False    
-                else:
-                    unblockeddiagonals[2] = False
-            if unblockeddiagonals[3]:
-                if self.square_is_in_bounds(x-dz,y-dz):
-                    movelist.append(self.position_after_move_as_tuple(x,y,-dz,-dz))
-                    if self.choose_square(x-dz,y-dz,board) != 0:
-                        unblockeddiagonals[3] = False    
-                else:      
-                    unblockeddiagonals[3] = False
-            if True not in unblockeddiagonals:
-                break
-        return movelist
+    # def bishop_control(self,x,y,board):
+    #     movelist = []
+    #     n = len(board)
+    #     unblockeddiagonals = [True,True,True,True]
+    #     for dz in range(1,n):
+    #         if unblockeddiagonals[0]:
+    #                 if self.square_is_in_bounds(x+dz,y+dz):
+    #                     movelist.append(self.position_after_move_as_tuple(x,y,dz,dz))
+    #                     if self.choose_square(x+dz,y+dz,board) != 0:
+    #                         unblockeddiagonals[0] = False             
+    #                 else:
+    #                     unblockeddiagonals[0] = False
+    #         if unblockeddiagonals[1]:
+    #             if self.square_is_in_bounds(x+dz,y-dz):
+    #                 movelist.append(self.position_after_move_as_tuple(x,y,dz,-dz))
+    #                 if self.choose_square(x+dz,y-dz,board) != 0:
+    #                     unblockeddiagonals[1] = False    
+    #             else:
+    #                 unblockeddiagonals[1] = False
+    #         if unblockeddiagonals[2]:
+    #             if self.square_is_in_bounds(x-dz,y+dz):
+    #                 movelist.append(self.position_after_move_as_tuple(x,y,-dz,dz))
+    #                 if self.choose_square(x-dz,y+dz,board) != 0:
+    #                     unblockeddiagonals[2] = False    
+    #             else:
+    #                 unblockeddiagonals[2] = False
+    #         if unblockeddiagonals[3]:
+    #             if self.square_is_in_bounds(x-dz,y-dz):
+    #                 movelist.append(self.position_after_move_as_tuple(x,y,-dz,-dz))
+    #                 if self.choose_square(x-dz,y-dz,board) != 0:
+    #                     unblockeddiagonals[3] = False    
+    #             else:      
+    #                 unblockeddiagonals[3] = False
+    #         if True not in unblockeddiagonals:
+    #             break
+    #     return movelist
     
-    def rook_control(self,x,y,board):
-        movelist = []
-        n = len(self.lauta)
-        unblockedfiles = [True,True,True,True]
-        for diff in range(1,n):
-            if unblockedfiles[0]:
-                if self.square_is_in_bounds(x+diff,y):
-                    movelist.append(self.position_after_move_as_tuple(x,y,diff,0)) 
-                    if self.choose_square(x+diff,y,board) != 0:
-                        unblockedfiles[0] = False
-                else:
-                    unblockedfiles[0] = False
-            if unblockedfiles[1]:
-                if self.square_is_in_bounds(x,y-diff):
-                    movelist.append(self.position_after_move_as_tuple(x,y,0,-diff)) 
-                    if self.choose_square(x,y-diff,board) != 0:
-                        unblockedfiles[1] = False
-                else:
-                    unblockedfiles[1] = False
-            if unblockedfiles[2]:
-                if self.square_is_in_bounds(x-diff,y):
-                    movelist.append(self.position_after_move_as_tuple(x,y,-diff,0)) 
-                    if self.choose_square(x-diff,y,board) != 0:
-                        unblockedfiles[2] = False
-                else:
-                    unblockedfiles[2] = False
-            if unblockedfiles[3]:
-                if self.square_is_in_bounds(x,y+diff):
-                    movelist.append(self.position_after_move_as_tuple(x,y,0,diff))  
-                    if self.choose_square(x,y+diff,board) != 0:
-                        unblockedfiles[3] = False
-                else:
-                    unblockedfiles[3] = False
-            if True not in unblockedfiles:
-                break
-        return movelist
+    # def rook_control(self,x,y,board):
+    #     movelist = []
+    #     n = len(self.lauta)
+    #     unblockedfiles = [True,True,True,True]
+    #     for diff in range(1,n):
+    #         if unblockedfiles[0]:
+    #             if self.square_is_in_bounds(x+diff,y):
+    #                 movelist.append(self.position_after_move_as_tuple(x,y,diff,0)) 
+    #                 if self.choose_square(x+diff,y,board) != 0:
+    #                     unblockedfiles[0] = False
+    #             else:
+    #                 unblockedfiles[0] = False
+    #         if unblockedfiles[1]:
+    #             if self.square_is_in_bounds(x,y-diff):
+    #                 movelist.append(self.position_after_move_as_tuple(x,y,0,-diff)) 
+    #                 if self.choose_square(x,y-diff,board) != 0:
+    #                     unblockedfiles[1] = False
+    #             else:
+    #                 unblockedfiles[1] = False
+    #         if unblockedfiles[2]:
+    #             if self.square_is_in_bounds(x-diff,y):
+    #                 movelist.append(self.position_after_move_as_tuple(x,y,-diff,0)) 
+    #                 if self.choose_square(x-diff,y,board) != 0:
+    #                     unblockedfiles[2] = False
+    #             else:
+    #                 unblockedfiles[2] = False
+    #         if unblockedfiles[3]:
+    #             if self.square_is_in_bounds(x,y+diff):
+    #                 movelist.append(self.position_after_move_as_tuple(x,y,0,diff))  
+    #                 if self.choose_square(x,y+diff,board) != 0:
+    #                     unblockedfiles[3] = False
+    #             else:
+    #                 unblockedfiles[3] = False
+    #         if True not in unblockedfiles:
+    #             break
+    #     return movelist
     
-    def queen_control(self,x,y,board):
-        movelist = []
-        movelist.extend(self.bishop_control(x,y,board))
-        movelist.extend(self.rook_control(x,y,board))
-        return movelist
+    # def queen_control(self,x,y,board):
+    #     movelist = []
+    #     movelist.extend(self.bishop_control(x,y,board))
+    #     movelist.extend(self.rook_control(x,y,board))
+    #     return movelist
     
-    def king_control(self,x,y):
-        movelist = []
-        if self.square_is_in_bounds(x+1,y):
-            movelist.append(self.position_after_move_as_tuple(x,y,1,0))
-        if self.square_is_in_bounds(x+1,y-1):
-            movelist.append(self.position_after_move_as_tuple(x,y,1,-1))
-        if self.square_is_in_bounds(x+1,y+1):
-            movelist.append(self.position_after_move_as_tuple(x,y,1,1))
-        if self.square_is_in_bounds(x,y+1):
-            movelist.append(self.position_after_move_as_tuple(x,y,0,1))
-        if self.square_is_in_bounds(x,y-1):
-            movelist.append(self.position_after_move_as_tuple(x,y,0,-1))
-        if self.square_is_in_bounds(x-1,y):
-            movelist.append(self.position_after_move_as_tuple(x,y,-1,0))
-        if self.square_is_in_bounds(x-1,y-1):
-            movelist.append(self.position_after_move_as_tuple(x,y,-1,-1))
-        if self.square_is_in_bounds(x-1,y+1):
-            movelist.append(self.position_after_move_as_tuple(x,y,-1,1))
-        return movelist
+    # def king_control(self,x,y):
+    #     movelist = []
+    #     if self.square_is_in_bounds(x+1,y):
+    #         movelist.append(self.position_after_move_as_tuple(x,y,1,0))
+    #     if self.square_is_in_bounds(x+1,y-1):
+    #         movelist.append(self.position_after_move_as_tuple(x,y,1,-1))
+    #     if self.square_is_in_bounds(x+1,y+1):
+    #         movelist.append(self.position_after_move_as_tuple(x,y,1,1))
+    #     if self.square_is_in_bounds(x,y+1):
+    #         movelist.append(self.position_after_move_as_tuple(x,y,0,1))
+    #     if self.square_is_in_bounds(x,y-1):
+    #         movelist.append(self.position_after_move_as_tuple(x,y,0,-1))
+    #     if self.square_is_in_bounds(x-1,y):
+    #         movelist.append(self.position_after_move_as_tuple(x,y,-1,0))
+    #     if self.square_is_in_bounds(x-1,y-1):
+    #         movelist.append(self.position_after_move_as_tuple(x,y,-1,-1))
+    #     if self.square_is_in_bounds(x-1,y+1):
+    #         movelist.append(self.position_after_move_as_tuple(x,y,-1,1))
+    #     return movelist
     
-    def square_is_in_bounds(self,x,y):
+    def square_is_in_bounds(self,x,y,board = []):
+        if board == []:
+            board = self.lauta
         if x>=0 and x<8 and y>=0 and y<8:
             return True
         return False
     
-    def move_as_UCI(self,x,y,dx,dy,checked=False,sc=""):
+    def move_as_UCI(self,x,y,dx,dy):
         style_dict_UCI_row = { 0:"a",1:"b",2:"c",3: "d",4:"e",5:"f",6:"g",7:"h"}
         style_dict_UCI_file = { 0:"8",1:"7",2:"6",3: "5",4:"4",5:"3",6:"2",7:"1"}
-        check = ""
-        if checked:
-            check = "+"
-        return style_dict_UCI_row[y] + style_dict_UCI_file[x] + style_dict_UCI_row[y+dy] + style_dict_UCI_file[x+dx] + sc + check
+        return style_dict_UCI_row[y] + style_dict_UCI_file[x] + style_dict_UCI_row[y+dy] + style_dict_UCI_file[x+dx]
     
     def position_after_move_as_tuple(self,x,y,dx,dy):
         return(x+dx,y+dy)    

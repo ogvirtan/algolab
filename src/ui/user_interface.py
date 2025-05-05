@@ -18,7 +18,7 @@ class UI():
                       [0,1,0,1,0,1,0,1],
                       [1,0,1,0,1,0,1,0]]
         self.peli = Shakki()
-        self.depth = 2
+        self.depth = 3
         self.eng = Engine(self.depth,self.peli)
         self.game_over = False
 
@@ -39,9 +39,9 @@ class UI():
         self.draw_board()
         self.set_board()
         self.main_loop()
-    
 
     def main_loop(self):
+        
         while True:
             self.check_events()
             self.draw_board()
@@ -53,7 +53,6 @@ class UI():
             if self.peli.gamestatus in {"DRAW BY REPETITION" ,"CHECKMATE","STALEMATE"}:
                 self.game_over = True
             if not self.game_over:
-                if self.peli.whitetomove:
                     if event.type == pygame.MOUSEBUTTONDOWN:
                         if event.button == 1:
                             pos_on_mbdown = pygame.mouse.get_pos()
@@ -75,17 +74,26 @@ class UI():
                                         y_op = (self.downscale(self.chosen_piece_original_position[0]))
                                         x_op = (self.downscale(self.chosen_piece_original_position[1]))
                                         dx = x_np-x_op
-                                        dy = y_np-y_op                          
+                                        dy = y_np-y_op                
+         
                                         self.peli.execute_move(x_op, y_op,dx,dy)
+                                        
                                         pygame.display.set_caption(self.peli.gamestatus)   
                                         self.set_board()  
+                                        
                                     self.chosen_piece_original_position = None
                                     self.chosen_piece = []
                                     break
-                else:          
-                    self.eng.make_move()
-                    pygame.display.set_caption(self.peli.gamestatus)
-                    self.set_board()
+
+                    if event.type == pygame.KEYDOWN:
+                        if event.key == pygame.K_SPACE: 
+                            self.eng.make_move()
+                            pygame.display.set_caption(self.peli.gamestatus)
+                            self.set_board()
+                            break
+                        if event.key == pygame.K_BACKSPACE: 
+                            self.peli.print_board()
+                            break
                     
     
     def draw_board(self):
