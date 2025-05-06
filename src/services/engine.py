@@ -9,7 +9,7 @@ sys.setrecursionlimit(10**6)
 dirname = os.path.dirname(__file__)
 
 class Engine:
-    def __init__(self,depth = 3, shakki=Shakki()):
+    def __init__(self,depth = 2, shakki=Shakki()):
         self.peli = shakki
         self.depth = depth
 
@@ -92,6 +92,7 @@ class Engine:
 
     def make_move(self):
         self.generate_supporting_lists()
+        self.generate_supporting_lists()
         dupeboard = self.peli.lauta[:]
 
         piece_eval = 0
@@ -141,9 +142,9 @@ class Engine:
             value = -1000000
             for siirto in siirtolista:
                 copymovewhite = movelist_white[:]
-                copymoveblack = movelist_black[:]
+                copymoveblack = []
                 copythreatwhite = threatlist_white[:]
-                copythreatblack = threatlist_black[:]
+                copythreatblack = []
 
                 piece = siirto[0]
                 x = siirto[1]
@@ -179,9 +180,9 @@ class Engine:
         else:
             value = 1000000
             for siirto in siirtolista:
-                copymovewhite = movelist_white[:]
+                copymovewhite = []
                 copymoveblack = movelist_black[:]
-                copythreatwhite = threatlist_white[:]
+                copythreatwhite = []
                 copythreatblack = threatlist_black[:]
 
                 piece = siirto[0]

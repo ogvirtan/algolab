@@ -411,7 +411,9 @@ class Shakki:
             self.whitetomove = True
             self.gamestatus = "WHITE TO MOVE"
     
-    def set_board(self, lauta):
+    def set_board(self, lauta, mover=None):
+        if mover != None:
+            self.whitetomove = mover
         self.lauta = lauta
 
     def set_board_FEN(self, fenstring:str):
