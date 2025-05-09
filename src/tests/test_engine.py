@@ -59,7 +59,7 @@ class TestEngine (unittest.TestCase):
         self.assertIn(self.eng.move_as_UCI(self.eng.alphabeta(self.eng.peli.lauta,self.eng.depth,float("-inf"),float("inf"),True,0,self.eng.movelist_white,self.eng.movelist_black,self.eng.threatlist_white,self.eng.threatlist_black)[1]), {"g5e7","g5g8"})
         
 
-    def test_alphabeta_returns_zero_at_stalemate(self):
+    def test_alphabeta_returns_zero_at_stalemate_black(self):
         self.eng.peli.set_board([[0, 0, 0, 0, -7, 0,0,0], 
                                 [0, 0, 0, 0, 0, 0, 0, 0], 
                                 [0, 0, 0, 0, 7, 0, 0, 0], 
@@ -71,7 +71,17 @@ class TestEngine (unittest.TestCase):
         self.eng.peli.change_mover()
         self.eng.generate_supporting_lists()
         self.assertEqual(self.eng.alphabeta(self.eng.peli.lauta,self.eng.depth,float("-inf"),float("inf"),False,0,self.eng.movelist_white,self.eng.movelist_black,self.eng.threatlist_white,self.eng.threatlist_black)[0], 0)
-    
+    def test_alphabeta_returns_zero_at_stalemate_white(self):
+        self.eng.peli.set_board([[0, 0, 0, 0, 7, 0,0,0], 
+                                [0, 0, 0, 0, 0, 0, 0, 0], 
+                                [0, 0, 0, 0, -7, 0, 0, 0], 
+                                [0, 0, 0, -5, 0, -5, 0, 0], 
+                                [0, 0, 0, 0, 0, 0, 0, 0], 
+                                [0, 0, 0, 0, 0, 0, 0, 0], 
+                                [0, 0, 0, 0, 0, 0, 0, 0], 
+                                [0, 0, 0, 0, 0, 0, 0, 0]])
+        self.eng.generate_supporting_lists()
+        self.assertEqual(self.eng.alphabeta(self.eng.peli.lauta,self.eng.depth,float("-inf"),float("inf"),True,0,self.eng.movelist_white,self.eng.movelist_black,self.eng.threatlist_white,self.eng.threatlist_black)[0], 0)
     def test_generate_move_king_returns_empty_list_with_no_moves(self):
         self.eng.peli.set_board([[0, 0, 0, 0, -7, 0,0,0], 
                                 [0, 0, 0, 0, 0, 0, 0, 0], 

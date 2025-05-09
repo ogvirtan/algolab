@@ -17,6 +17,14 @@ class TestShakki(unittest.TestCase):
     
     def test_move_out_of_turn_black(self):
         self.assertEqual(self.peli.check_move_legality(1,0,1,0), False)
+    
+    def test_move_with_specified_parameters_returns_correct_value_with_different_mover(self):
+        self.assertEqual(self.peli.check_move_legality(1,0,1,0,self.peli.lauta,False), True)
+        self.assertEqual(self.peli.check_move_legality(0,0,1,0,self.peli.lauta,False), False)
+        self.assertEqual(self.peli.check_move_legality(0,1,2,1,self.peli.lauta,False), True)
+        self.assertEqual(self.peli.check_move_legality(0,2,1,1,self.peli.lauta,False), False)
+        self.assertEqual(self.peli.check_move_legality(0,3,1,1,self.peli.lauta,False), False)
+        self.assertEqual(self.peli.check_move_legality(0,4,1,1,self.peli.lauta,False), False)
 
     def test_change_mover_passes_turn(self):
         self.peli.change_mover()
@@ -52,6 +60,29 @@ class TestShakki(unittest.TestCase):
                         [0,0,0,6,7,4,3,5]])
             self.assertEqual(self.peli.check_move_legality(6,0,-1,1), True)
 
+    def test_pawn_move_to_occupied_square_white(self):
+        self.peli.set_board([[-5,-3,-4,-6,-7,-4,-3,-5],
+                            [-1,-1,-1,-1,-1,-1,-1,-1],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [3,0,-3,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [1,1,1,1,1,1,1,1],
+                            [0,0,0,6,7,4,3,5]])
+        self.assertEqual(self.peli.check_move_legality(6,0,-2,0), False)
+        self.assertEqual(self.peli.check_move_legality(6,2,-2,0), False)
+    
+    def test_pawn_move_two_squares_having_already_moved_white(self):
+        self.peli.set_board([[-5,-3,-4,-6,-7,-4,-3,-5],
+                            [-1,-1,-1,-1,-1,-1,-1,-1],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [1,0,0,0,0,0,0,0],
+                            [0,1,1,1,1,1,1,1],
+                            [0,0,0,6,7,4,3,5]])
+        self.assertEqual(self.peli.check_move_legality(5,0,2,0), False)
+
     #pawn moves black
     def test_two_pace_pawn_move_to_empty_square_black(self):
         self.peli.change_mover()
@@ -83,6 +114,32 @@ class TestShakki(unittest.TestCase):
                       [5,3,4,6,7,4,3,5]])
         self.assertEqual(self.peli.check_move_legality(1,0,1,1), False)
         self.assertEqual(self.peli.check_move_legality(1,0,1,-1), False)
+    
+    def test_pawn_move_two_squares_having_already_moved_black(self):
+        self.peli.change_mover()
+        self.peli.set_board([[-5,-3,-4,-6,-7,-4,-3,-5],
+                      [0,0,0,-1,-1,-1,-1,-1],
+                      [-1,0,0,0,0,0,0,0],
+                      [0,0,0,0,0,0,0,0],
+                      [0,0,0,0,0,0,0,0],
+                      [0,0,0,0,0,0,0,0],
+                      [1,1,1,1,1,1,1,1],
+                      [5,3,4,6,7,4,3,5]])
+        self.assertEqual(self.peli.check_move_legality(2,0,2,0), False)
+    
+    def test_pawn_move_to_occupied_square_black(self):
+        self.peli.change_mover()
+        self.peli.set_board([[-5,-3,-4,-6,-7,-4,-3,-5],
+                            [-1,-1,-1,-1,-1,-1,-1,-1],
+                            [0,0,0,0,0,0,0,0],
+                            [3,-3,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [1,1,1,1,1,1,1,1],
+                            [5,3,4,6,7,4,3,5]])
+        self.assertEqual(self.peli.check_move_legality(1,0,-2,0), False)
+        self.assertEqual(self.peli.check_move_legality(1,1,-2,0), False)
+        
     #knight moves white
     def test_knight_move_out_of_bounds_white(self):
         self.peli.set_board([[0,0,0,0,-7,0,0,0],
@@ -119,6 +176,17 @@ class TestShakki(unittest.TestCase):
                         [0,0,0,0,0,0,0,0],
                         [0,0,0,0,7,0,0,0]])
             self.assertEqual(self.peli.check_move_legality(3,3,-1,2), False)
+
+    def test_knight_illegal_move_dimensions_white(self):
+        self.peli.set_board([[0,0,0,0,-7,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,3,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,7,0,0,0]])
+        self.assertEqual(self.peli.check_move_legality(3,3,-1,1), False)
 
     #kinght moves black
     def test_knight_move_out_of_bounds_white(self):
@@ -203,6 +271,17 @@ class TestShakki(unittest.TestCase):
             self.assertEqual(self.peli.check_move_legality(3,3,-2,-2), True)
             self.assertEqual(self.peli.check_move_legality(3,3,3,-3), True)
             self.assertEqual(self.peli.check_move_legality(3,3,-2,-2), True)
+
+    def test_bishop_illegal_move_dimensions_white(self):
+        self.peli.set_board([[0,0,0,0,-7,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,4,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,7,0,0,0]])
+        self.assertEqual(self.peli.check_move_legality(3,3,-2,1), False)
     #bishop black
     def test_bishop_move_emptyish_board_black(self):
         self.peli.set_board([[0,0,0,0,-7,0,0,0],
@@ -231,6 +310,17 @@ class TestShakki(unittest.TestCase):
         self.assertEqual(self.peli.check_move_legality(3,3,-1,1), False)
         self.assertEqual(self.peli.check_move_legality(3,3,-2,2), False)
         self.assertEqual(self.peli.check_move_legality(3,3,2,2), False)
+    
+    def test_bishop_illegal_move_dimensions_black(self):
+        self.peli.set_board([[0,0,0,0,-7,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,-4,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,7,0,0,0]])
+        self.assertEqual(self.peli.check_move_legality(3,3,-2,1), False)
     
     #rook white
     def test_rook_move_emptyish_board_white(self):
@@ -275,6 +365,51 @@ class TestShakki(unittest.TestCase):
             self.assertEqual(self.peli.check_move_legality(3,3,0,2), False)
             self.assertEqual(self.peli.check_move_legality(3,3,2,0), True)
             self.assertEqual(self.peli.check_move_legality(3,3,0,-1), True)
+        
+    #rook black
+    def test_rook_move_emptyish_board_black(self):
+        self.peli.change_mover()
+        self.peli.set_board([[0,0,0,0,-7,0,0,0],
+                    [0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0],
+                    [0,0,0,-5,0,0,0,0],
+                    [0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0],
+                    [0,0,0,0,7,0,0,0]])
+        self.assertEqual(self.peli.check_move_legality(3,3,-2,0), True)
+        self.assertEqual(self.peli.check_move_legality(3,3,0,2), True)
+        self.assertEqual(self.peli.check_move_legality(3,3,2,0), True)
+        self.assertEqual(self.peli.check_move_legality(3,3,0,-2), True)
+
+    def test_rook_move_over_own_pieces_black(self):
+        self.peli.set_board([[0,0,0,0,-7,0,0,0],
+                    [0,0,0,0,0,0,0,0],
+                    [0,0,0,-1,0,0,0,0],
+                    [0,0,-1,-5,-1,0,0,0],
+                    [0,0,0,-1,0,0,0,0],
+                    [0,0,0,0,0,0,0,0],
+                    [0,0,0,0,0,0,0,0],
+                    [0,0,0,0,7,0,0,0]],False)
+        self.assertEqual(self.peli.check_move_legality(3,3,-2,0), False)
+        self.assertEqual(self.peli.check_move_legality(3,3,0,2), False)
+        self.assertEqual(self.peli.check_move_legality(3,3,2,0), False)
+        self.assertEqual(self.peli.check_move_legality(3,3,0,-2), False)
+    
+    def test_rook_capture_opposing_pieces_black(self):
+        for item in set(self.peli.lauta[6]+self.peli.lauta[7]):
+            self.peli.set_board([[0,0,0,0,-7,0,0,0],
+                                [0,0,0,item,0,0,0,0],
+                                [0,0,0,0,0,0,0,0],
+                                [0,0,item,-5,item,0,0,0],
+                                [0,0,0,0,0,0,0,0],
+                                [0,0,0,item,0,0,0,0],
+                                [0,0,0,0,0,0,0,0],
+                                [0,0,0,0,7,0,0,0]],False)
+            self.assertEqual(self.peli.check_move_legality(3,3,-2,0), True)
+            self.assertEqual(self.peli.check_move_legality(3,3,0,2), False)
+            self.assertEqual(self.peli.check_move_legality(3,3,2,0), True)
+            self.assertEqual(self.peli.check_move_legality(3,3,0,-3), False)
     
     #king white
     def test_king_move_emptyish_board_white(self):
@@ -879,4 +1014,142 @@ class TestShakki(unittest.TestCase):
                             [0,-1,0,7,0,0,0,0],
                             [0,1,0,0,0,0,0,0],
                             [0,0,0,0,0,0,0,0]])
-        self.assertEqual(self.peli.can_pawn_movelist(6,1,1,self.peli.lauta,self.peli.whitetomove),[])        
+        self.assertEqual(self.peli.can_pawn_movelist(6,1,1,self.peli.lauta,self.peli.whitetomove),[])     
+    
+    def test_promote_pawns_works_white(self):
+        self.peli.set_board([[1,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,-7,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [7,0,0,0,0,0,0,0]])
+        self.peli.promote_pawns()
+        self.assertCountEqual(self.peli.lauta, [[6,0,0,0,0,0,0,0],
+                                                [0,0,0,0,0,0,0,0],
+                                                [0,0,0,0,0,0,0,0],
+                                                [0,0,0,-7,0,0,0,0],
+                                                [0,0,0,0,0,0,0,0],
+                                                [0,0,0,0,0,0,0,0],
+                                                [0,0,0,0,0,0,0,0],
+                                                [7,0,0,0,0,0,0,0]])
+
+    def test_promote_pawns_works_black(self):
+        self.peli.set_board([[0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,-7,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [7,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,-1]])
+        self.peli.promote_pawns()
+        self.assertCountEqual(self.peli.lauta, [[0,0,0,0,0,0,0,0],
+                                                [0,0,0,0,0,0,0,0],
+                                                [0,0,0,0,0,0,0,0],
+                                                [0,0,0,-7,0,0,0,0],
+                                                [0,0,0,0,0,0,0,0],
+                                                [0,0,0,0,0,0,0,0],
+                                                [7,0,0,0,0,0,0,0],
+                                                [0,0,0,0,0,0,0,-6]])
+
+    def test_execute_move_does_not_change_game_states_called_for_illegal_move(self):
+        test_board = self.peli.lauta[:]
+        test_mover = self.peli.whitetomove
+        self.peli.execute_move(1,0,1,0)
+        self.assertEqual(self.peli.whitetomove, test_mover)
+        self.assertCountEqual(self.peli.lauta, test_board)
+    
+    def test_execute_move_changes_game_states_called_for_legal_move(self):
+        test_board = self.peli.lauta[:]
+        test_mover = self.peli.whitetomove
+        self.peli.set_board([[0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,-7,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,-1,0,0,0,0,0],
+                            [1,1,0,0,0,0,0,0],
+                            [7,0,0,0,0,0,0,0]])
+        self.peli.execute_move(6,1,-1,1)
+        self.assertNotEqual(self.peli.whitetomove, test_mover)
+        self.assertCountEqual(self.peli.lauta, [[0,0,0,0,0,0,0,0],
+                                                [0,0,0,0,0,0,0,0],
+                                                [0,0,0,0,0,0,0,0],
+                                                [0,0,0,-7,0,0,0,0],
+                                                [0,0,0,0,0,0,0,0],
+                                                [0,0,1,0,0,0,0,0],
+                                                [1,0,0,0,0,0,0,0],
+                                                [7,0,0,0,0,0,0,0]])
+    
+    def test_execute_move_promotes_pawns(self):
+        self.peli.set_board([[0,0,0,0,0,0,0,0],
+                            [0,0,0,0,1,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,-7,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [7,0,0,0,0,0,0,0]])
+        self.peli.execute_move(1,4,-1,0)
+        self.assertCountEqual(self.peli.lauta, [[0,0,0,0,6,0,0,0],
+                                                [0,0,0,0,0,0,0,0],
+                                                [0,0,0,0,0,0,0,0],
+                                                [0,0,0,-7,0,0,0,0],
+                                                [0,0,0,0,0,0,0,0],
+                                                [0,0,0,0,0,0,0,0],
+                                                [0,0,0,0,0,0,0,0],
+                                                [7,0,0,0,0,0,0,0]])
+
+    def test_execute_move_changes_state_to_ending_on_repetition(self):
+        self.peli.set_board([[-5,0,-4,-6,-7,-4,-3,-5],
+                            [-1,-1,-1,-1,-1,-1,-1,-1],
+                            [0,0,-3,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [1,1,1,1,1,1,1,1],
+                            [5,3,4,6,7,4,3,5]],False)
+        self.peli.draw_by_repetition = {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w":2}
+        self.peli.execute_move(2,2,-2,-1)
+        self.assertEqual(self.peli.gamestatus, "DRAW BY REPETITION")
+    
+    def test_execute_move_changes_state_to_ending_on_mate(self):
+        self.peli.set_board([[-5,-3,-4,-6,-7,-4,-3,-5],
+                            [-1,-1,-1,-1,-1,-1,-1,-1],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,6,0,0],
+                            [0,0,0,0,0,5,0,0],
+                            [1,1,1,1,1,1,1,1],
+                            [5,3,4,6,7,4,3,5]],True)
+        self.peli.execute_move(4,5,-3,0)
+        self.assertEqual(self.peli.gamestatus, "CHECKMATE")
+    
+    def test_execute_move_changes_state_to_ending_on_stalemate(self):
+        self.peli.set_board([[0,0,0,0,0,0,0,-7],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,5,0],
+                            [0,0,0,0,0,5,0,0],
+                            [1,1,1,1,1,1,1,1],
+                            [5,3,4,6,7,4,3,5]],True)
+        self.peli.execute_move(5,5,-4,0)
+        self.assertEqual(self.peli.gamestatus, "STALEMATE")
+    
+    def test_execute_move_changes_state_to_check(self):
+        self.peli.set_board([[-5,-3,-4,-6,-7,-4,-3,-5],
+                            [-1,-1,-1,-1,-1,-1,-1,-1],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [0,0,0,0,0,6,0,0],
+                            [0,0,0,0,0,0,0,0],
+                            [1,1,1,1,1,1,1,1],
+                            [5,3,4,6,7,4,3,5]],True)
+        self.peli.execute_move(4,5,-3,0)
+        self.assertEqual(self.peli.gamestatus, "CHECK! BLACK TO MOVE")
+
+    def test_get_board_as_FEN_returns_correct_string(self):
+        self.assertEqual(self.peli.get_board_as_FEN(),"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w")
