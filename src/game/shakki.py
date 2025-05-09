@@ -133,6 +133,7 @@ class Shakki:
                         if self.choose_square(x,i,board) != 0:
                             return False   
                     return True
+        return False
 
     def move_like_queen(self,x,y,dx,dy,board,mover):
         if mover == None:
@@ -363,7 +364,7 @@ class Shakki:
                 else:
                     self.gamestatus = "STALEMATE"
         else:
-            #print("illegal move, try again")
+            print("illegal move, try again")
             pass
 
     def promote_pawns(self, board = []):
@@ -415,45 +416,12 @@ class Shakki:
         if mover != None:
             self.whitetomove = mover
         self.lauta = lauta
-
-    def set_board_FEN(self, fenstring:str):
-        reverse_style_dict_FEN = {"P":1,"N":3,"B":4,"R":5,"Q":6,"K":7,"p":-1,"n":-3,"b":-4,"r":-5,"q":-6,"k":-7}
-        splitstring = fenstring.split(" ")
-        unpacked = []
-        temp = []
-        for item in splitstring[0]:
-            if item not in reverse_style_dict_FEN.keys():
-                if item == "/":
-                    continue
-                for i in range(int(item)):
-                    temp.append(0)
-            else:
-                temp.append(reverse_style_dict_FEN[item])
-            if len(temp) == 8:
-                unpacked.append(temp)
-                temp = []
-                if len(unpacked) == 8:
-                    break
-        self.lauta = unpacked
-        if splitstring[1] == "w":
-            self.whitetomove = True
-        else:
-            self.whitetomove = False
     
     def print_board(self):
         for row in self.lauta:
             for item in row:
                 print(item, end ='\t')
             print("\n")
-    
-    def get_board_as_SAN(self):
-        style_dict_SAN = { 0:".",1:"P",3:"N",4:"B",5:"R",6:"Q",7:"K",-1:"p",-3:"n",-4:"b",-5:"r",-6:"q",-7:"k"}
-        rval = ""
-        for row in self.lauta:
-            for item in row:
-                rval += style_dict_SAN[item] + " "
-            rval += "\n"
-        return rval
     
     def get_board_as_FEN(self,board = [], mover = None):
         if mover == None:
@@ -629,7 +597,4 @@ class Shakki:
     def move_as_UCI(self,x,y,dx,dy):
         style_dict_UCI_row = { 0:"a",1:"b",2:"c",3: "d",4:"e",5:"f",6:"g",7:"h"}
         style_dict_UCI_file = { 0:"8",1:"7",2:"6",3: "5",4:"4",5:"3",6:"2",7:"1"}
-        return style_dict_UCI_row[y] + style_dict_UCI_file[x] + style_dict_UCI_row[y+dy] + style_dict_UCI_file[x+dx]
-    
-    def position_after_move_as_tuple(self,x,y,dx,dy):
-        return(x+dx,y+dy)    
+        return style_dict_UCI_row[y] + style_dict_UCI_file[x] + style_dict_UCI_row[y+dy] + style_dict_UCI_file[x+dx]  
