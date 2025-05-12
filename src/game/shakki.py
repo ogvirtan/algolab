@@ -1,7 +1,19 @@
 import copy
 
 class Shakki:
+    """Luokka, joka sisältää shakkipelin toiminnallisuuden.
+
+    Attributes:
+        lauta: pitää kirjaa pelin nappuloiden sijoittumisesta laudalla
+        whitetomove: pitää kirjaa pelaajien siirtovuoroista
+        gamestatus: pitää kirjaa pelin tilanteesta
+        draw_by_repetition: pitää kirjaa toistuneista asemista
+    """
+
     def __init__(self):
+        """Luokan konstruktori, joka luo uuden pelin ja alustaa luokan attribuutit
+        """
+
         self.lauta = [[-5,-3,-4,-6,-7,-4,-3,-5],
                       [-1,-1,-1,-1,-1,-1,-1,-1],
                       [0,0,0,0,0,0,0,0],
@@ -15,6 +27,21 @@ class Shakki:
         self.draw_by_repetition = {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w":1}
 
     def move_like_pawn(self, x,y,dx,dy,board,mover=None):
+        """Funktio, joka tutkii siirron laillisuutta, kun liikutettavaksi valittu nappula on moukka.
+
+            Args:
+                x: nappulan sijainnin x-koordinaatti
+                y: nappulan sijainnin y-koordinaatti
+                dx: nappulan x-koordinaatin muutos
+                dy: nappulan y-koordinaatin muutos
+                board: laudan tilanne liikkeen hetkellä
+                mover: siirtovuorossa oleva pelaaja
+
+            Returns:
+                True: jos siirto on shakkipelin sääntöjen mukainen
+                False: jos siirto on laiton
+        """
+
         if mover == None:
             mover = self.whitetomove
         if mover:
@@ -51,6 +78,21 @@ class Shakki:
             return False
 
     def move_like_knight(self, x,y,dx,dy,board,mover=None):
+        """Funktio, joka tutkii siirron laillisuutta, kun liikutettavaksi valittu nappula on ratsu.
+
+            Args:
+                x: nappulan sijainnin x-koordinaatti
+                y: nappulan sijainnin y-koordinaatti
+                dx: nappulan x-koordinaatin muutos
+                dy: nappulan y-koordinaatin muutos
+                board: laudan tilanne liikkeen hetkellä
+                mover: siirtovuorossa oleva pelaaja
+                
+            Returns:
+                True: jos siirto on shakkipelin sääntöjen mukainen
+                False: jos siirto on laiton
+        """
+
         if mover == None:
             mover = self.whitetomove
         if ((abs(dy) == 2 and abs(dx) == 1) or (abs(dy) == 1 and abs(dx) == 2)):
@@ -65,6 +107,21 @@ class Shakki:
         return False
 
     def move_like_bishop(self, x,y,dx,dy,board,mover=None):
+        """Funktio, joka tutkii siirron laillisuutta, kun liikutettavaksi valittu nappula on lähetti.
+
+            Args:
+                x: nappulan sijainnin x-koordinaatti
+                y: nappulan sijainnin y-koordinaatti
+                dx: nappulan x-koordinaatin muutos
+                dy: nappulan y-koordinaatin muutos
+                board: laudan tilanne liikkeen hetkellä
+                mover: siirtovuorossa oleva pelaaja
+                
+            Returns:
+                True: jos siirto on shakkipelin sääntöjen mukainen
+                False: jos siirto on laiton
+        """
+
         if mover == None:
             mover = self.whitetomove
         if abs(dx) != abs(dy):
@@ -97,6 +154,21 @@ class Shakki:
             return True
 
     def move_like_rook(self, x,y,dx,dy,board,mover=None):
+        """Funktio, joka tutkii siirron laillisuutta, kun liikutettavaksi valittu nappula on torni.
+
+            Args:
+                x: nappulan sijainnin x-koordinaatti
+                y: nappulan sijainnin y-koordinaatti
+                dx: nappulan x-koordinaatin muutos
+                dy: nappulan y-koordinaatin muutos
+                board: laudan tilanne liikkeen hetkellä
+                mover: siirtovuorossa oleva pelaaja
+                
+            Returns:
+                True: jos siirto on shakkipelin sääntöjen mukainen
+                False: jos siirto on laiton
+        """
+
         if mover == None:
             mover = self.whitetomove
         if mover:
@@ -136,6 +208,21 @@ class Shakki:
         return False
 
     def move_like_queen(self,x,y,dx,dy,board,mover):
+        """Funktio, joka tutkii siirron laillisuutta, kun liikutettavaksi valittu nappula on kuningatar.
+
+            Args:
+                x: nappulan sijainnin x-koordinaatti
+                y: nappulan sijainnin y-koordinaatti
+                dx: nappulan x-koordinaatin muutos
+                dy: nappulan y-koordinaatin muutos
+                board: laudan tilanne liikkeen hetkellä
+                mover: siirtovuorossa oleva pelaaja
+                
+            Returns:
+                True: jos siirto on shakkipelin sääntöjen mukainen
+                False: jos siirto on laiton
+        """
+
         if mover == None:
             mover = self.whitetomove
         if self.move_like_rook(x,y,dx,dy,board,mover) or self.move_like_bishop(x,y,dx,dy,board,mover):
@@ -143,6 +230,21 @@ class Shakki:
         return False
 
     def move_like_king(self, x,y,dx,dy,board,mover=None):
+        """Funktio, joka tutkii siirron laillisuutta, kun liikutettavaksi valittu nappula on kuningas.
+
+            Args:
+                x: nappulan sijainnin x-koordinaatti
+                y: nappulan sijainnin y-koordinaatti
+                dx: nappulan x-koordinaatin muutos
+                dy: nappulan y-koordinaatin muutos
+                board: laudan tilanne liikkeen hetkellä
+                mover: siirtovuorossa oleva pelaaja
+                
+            Returns:
+                True: jos siirto on shakkipelin sääntöjen mukainen
+                False: jos siirto on laiton
+        """
+
         if mover == None:
             mover = self.whitetomove
         if mover:
@@ -157,6 +259,21 @@ class Shakki:
             return False
 
     def check_move_legality(self, x,y,dx,dy,board=[],mover=None):
+        """Funktio, joka tutkii siirron laillisuutta.
+
+            Args:
+                x: nappulan sijainnin x-koordinaatti
+                y: nappulan sijainnin y-koordinaatti
+                dx: nappulan x-koordinaatin muutos
+                dy: nappulan y-koordinaatin muutos
+                board: laudan tilanne liikkeen hetkellä
+                mover: siirtovuorossa oleva pelaaja
+                
+            Returns:
+                True: jos siirto on shakkipelin sääntöjen mukainen
+                False: jos siirto on laiton
+        """
+
         if mover == None:
             mover = self.whitetomove
         if board == []:
@@ -166,27 +283,34 @@ class Shakki:
         if 0<= x+dx <=7 and 0<= y+dy <=7:
             if self.choose_square(x,y,board) == 0:
                 return False
-            #pawn
             if abs(self.choose_square(x,y,board)) == 1:
                 return self.move_like_pawn(x,y,dx,dy,board,mover)
-            #knight
             if abs(self.choose_square(x,y,board)) == 3:
                 return self.move_like_knight(x,y,dx,dy,board,mover)
-            #bishop
             if abs(self.choose_square(x,y,board)) == 4:
-                return self.move_like_bishop(x,y,dx,dy,board,mover)
-            #rook        
+                return self.move_like_bishop(x,y,dx,dy,board,mover)   
             if abs(self.choose_square(x,y,board)) == 5:
                 return self.move_like_rook(x,y,dx,dy,board,mover)
-            #queen
             if  abs(self.choose_square(x,y,board)) == 6:
                 return self.move_like_queen(x,y,dx,dy,board,mover)
-            #king
             if abs(self.choose_square(x,y,board)) == 7:
                 return self.move_like_king(x,y,dx,dy,board,mover)
         return False
 
     def square_threatened(self, x, y, board=[],mover = None):
+        """Funktio, joka tutkii, uhkaako jokin vastustajan nappuloista laudan ruutua koordinaateissa (x,y).
+
+            Args:
+                x: nappulan sijainnin x-koordinaatti
+                y: nappulan sijainnin y-koordinaatti
+                board: laudan tilanne liikkeen hetkellä
+                mover: siirtovuorossa oleva pelaaja
+                
+            Returns:
+                True: jos ruutu on uhattu
+                False: jos ruutu ei ole uhattu
+        """
+
         if board == []:
             board = self.lauta
         n = len(board)
@@ -196,7 +320,6 @@ class Shakki:
             return False       
         if mover:
             colormod = -1
-            #check for pawns
             if self.square_is_in_bounds(x-1,y-1,board):
                 if self.choose_square(x-1,y-1,board) == colormod*1:
                     return True
@@ -205,14 +328,12 @@ class Shakki:
                     return True
         else:
             colormod = 1
-            #check for pawns
             if self.square_is_in_bounds(x+1,y-1,board):
                 if self.choose_square(x+1,y-1,board) == colormod*1:
                     return True
             if self.square_is_in_bounds(x+1,y+1,board):
                 if self.choose_square(x+1,y+1,board) == colormod*1:
                     return True
-        #check for knights
         if self.square_is_in_bounds(x-2,y-1,board):
             if self.choose_square(x-2,y-1,board) == colormod*3:
                 return True 
@@ -240,7 +361,6 @@ class Shakki:
         unblockedfiles = [True,True,True,True]
         unblockeddiagonals = [True,True,True,True]
         for diff in range(1,n):
-            #check for blocking pieces on file
             if mover:
                 if self.choose_square(x+diff,y,board) == None or self.choose_square(x+diff,y,board) in {-1,-3,-4,-7} or self.choose_square(x+diff,y,board) > 0:
                     unblockedfiles[0] = False
@@ -259,7 +379,6 @@ class Shakki:
                     unblockedfiles[2] = False
                 if self.choose_square(x,y-diff,board) == None or self.choose_square(x,y-diff,board) in {1,3,4,7} or self.choose_square(x,y-diff,board) < 0:
                     unblockedfiles[3] = False
-            #check for queens or rooks
             if unblockedfiles[0]:
                 if self.choose_square(x+diff,y,board) == colormod*5 or self.choose_square(x+diff,y,board) == colormod*6:
                     return True
@@ -272,7 +391,6 @@ class Shakki:
             if unblockedfiles[3]:
                 if self.choose_square(x,y-diff,board) == colormod*5 or self.choose_square(x,y-diff,board) == colormod*6:
                     return True
-            #check for blocking pieces on diagonal
             if mover:
                 if self.choose_square(x+diff,y+diff,board) == None or self.choose_square(x+diff,y+diff,board) in {-1,-3,-5,-7} or self.choose_square(x+diff,y+diff,board) > 0:
                     unblockeddiagonals[0] = False
@@ -291,7 +409,6 @@ class Shakki:
                     unblockeddiagonals[2] = False
                 if self.choose_square(x-diff,y-diff,board) == None or self.choose_square(x-diff,y-diff,board) in {1,3,5,7}or self.choose_square(x-diff,y-diff,board) < 0:
                     unblockeddiagonals[3] = False
-            #check for queens or bishops
             if unblockeddiagonals[0]:
                 if self.choose_square(x+diff,y+diff,board) == colormod*4 or self.choose_square(x+diff,y+diff,board) == colormod*6:
                     return True
@@ -304,7 +421,6 @@ class Shakki:
             if unblockeddiagonals[3]:
                 if self.choose_square(x-diff,y-diff,board) == colormod*4 or self.choose_square(x-diff,y-diff,board) == colormod*6:
                     return True
-        #check for kings
         if self.choose_square(x+1,y,board) == colormod*7:
             return True
         if self.choose_square(x+1,y-1,board) == colormod*7:
@@ -324,6 +440,17 @@ class Shakki:
         return False
         
     def king_threatened(self, board=[], mover = None):
+        """Funktio, joka löytää oman kuninkaan laudalta, ja tutkii onko se ruudulla, jota vastustaja uhkaa.
+
+            Args:
+                board: laudan tilanne liikkeen hetkellä
+                mover: siirtovuorossa oleva pelaaja
+                
+            Returns:
+                True: jos oma kuningas on uhattu
+                False: jos oma kuningas ei ole uhattu
+        """
+
         if board == []:
             board = self.lauta
         n = len(board)
@@ -344,6 +471,16 @@ class Shakki:
 
 
     def execute_move(self,x,y,dx,dy):
+        """Funktio, joka päivittää luokan konstruktorissa alustetut attribuutit saadessaan laillisen siirron parametrit, tai ilmoittaa jos siirto oli laiton.
+        Funktio myös tarkistaa, onko peli ohi tehdyn siirron jälkeen.
+
+            Args:
+                x: nappulan sijainnin x-koordinaatti
+                y: nappulan sijainnin y-koordinaatti
+                dx: nappulan x-koordinaatin muutos
+                dy: nappulan y-koordinaatin muutos                
+        """
+
         if self.preview_move(x,y,dx,dy):
             if abs(self.choose_square(x,y)) == 1:
                 self.draw_by_repetition = {}
@@ -368,6 +505,12 @@ class Shakki:
             pass
 
     def promote_pawns(self, board = []):
+        """Funktio, joka korottaa moukat kuningattariksi, jos ne ovat päässeet laudan loppuun.
+
+            Args:
+                board: lauta, jolle korotukset tehdään
+        """
+
         if board == []:
             board = self.lauta
         n = len(board)
@@ -378,6 +521,21 @@ class Shakki:
                 board[7][i] = -6
 
     def preview_move(self,x,y,dx,dy,board=[],mover= None):
+        """Funktio, joka tekee siirron kopioidulle laudalle, ja palauttaa siirron laillisuuden.
+
+            Args:
+                x: nappulan sijainnin x-koordinaatti
+                y: nappulan sijainnin y-koordinaatti
+                dx: nappulan x-koordinaatin muutos
+                dy: nappulan y-koordinaatin muutos
+                board: laudan tilanne liikkeen hetkellä
+                mover: siirtovuorossa oleva pelaaja
+                
+            Returns:
+                True: jos siirto on shakkipelin sääntöjen mukainen
+                False: jos siirto on laiton
+        """
+
         if mover == None:
             mover = self.whitetomove
         if board == []:
@@ -392,12 +550,31 @@ class Shakki:
         return False
     
     def check_for_having_no_moves(self):
+        """Funktio, joka tutkii onko pelaajalla laillisia siirtoja jäljellä.
+               
+            Returns:
+                True: jos pelaajalla ei ole laillisia siirtoja
+                False: jos pelaajalla on laillisia siirtoja jäljellä
+        """
+
         movelist = self.return_move_list()
         if movelist == []:
             return True
         return False
 
     def choose_square(self,x,y, board=[]):
+        """Funktio, joka palauttaa laudan esityksen ruudun sisällöstä, jos koordinaatit on määritelty oikein.
+
+            Args:
+                x: nappulan sijainnin x-koordinaatti
+                y: nappulan sijainnin y-koordinaatti
+                board: laudan tilanne liikkeen hetkellä
+                
+            Returns:
+                None: jos koordinaatit veisivät laudan ulkopuolelle
+                laudan esitys ruudun sisällöstä koordinaatissa (x,y) muuten.
+        """
+
         if board == []:
             board = self.lauta
         if x < 0 or x >7 or y < 0 or y >7:
@@ -405,6 +582,9 @@ class Shakki:
         return board[x][y]
     
     def change_mover(self):
+        """Funktio, joka vaihtaa siirtovuoron toiselle pelaajalle ja päivittää pelin statuksen.
+        """
+
         if self.whitetomove:
             self.whitetomove = False
             self.gamestatus = "BLACK TO MOVE"
@@ -413,17 +593,38 @@ class Shakki:
             self.gamestatus = "WHITE TO MOVE"
     
     def set_board(self, lauta, mover=None):
+        """Funktio, joka asettaa nappulat laudalle parametrilla määritellyllä tavalla. Siirtovuorossa olevan pelaajan voi myös määritellä parametrina.
+
+            Args:
+                lauta: haluttu nappuloiden konfiguraatio
+                mover: mahdollisuus määritellä siirtovuoro
+        """
+
         if mover != None:
             self.whitetomove = mover
         self.lauta = lauta
     
     def print_board(self):
+        """Funktio, joka tulostaa laudan tilanteen käyttäjälle helppolukuisena. Lähinnä käytetty kehityksen aikana varmistamaan laudan tilanteen muuttuvan oikein.
+        """
+
         for row in self.lauta:
             for item in row:
                 print(item, end ='\t')
             print("\n")
     
     def get_board_as_FEN(self,board = [], mover = None):
+        """Funktio, joka tulostaa laudan tilanteen merkkijonona jokseenkin FEN-muotoisena(Forsyth-Edwards Notation). Vain tälle projektille tarpeellinen informaatio on sisällytetty merkkijonoon.
+            Funktiota käytetään vain toistuvan aseman tasapelitarkasteluun.
+
+            Args:
+                board: pelilauta
+                mover: liikkumisvuorossa oleva pelaaja
+
+            Returns:
+                palauttaa pelitilanteen merkkijonona
+        """
+
         if mover == None:
             mover = self.whitetomove
         if board == []:
@@ -453,6 +654,16 @@ class Shakki:
         return rval
 
     def return_move_list(self,board=[],mover=None):
+        """Funktio, joka etsii kaikki lailliset siirrot pelaajalle, ja palautta ne listana.
+
+            Args:
+                board: pelilauta
+                mover: liikuntavuorossa oleva pelaaja
+            
+            Returns:
+                palauttaa kaikki lailliset siirrot listana
+        """
+
         allmovelist = []
         if mover == None:
             mover = self.whitetomove
@@ -475,6 +686,19 @@ class Shakki:
         return allmovelist
 
     def get_movelist_for_piece(self, x, y, piecenmbr, board,mover):
+        """Funktio, joka etsii kaikki lailliset siirrot nappulalle.
+
+            Args:
+                x: nappulan x-koordinaatti laudalla
+                y: nappulan y-koordinaatti laudalla
+                piecenmbr: nappula
+                board: lauta
+                mover: siirtovuorossa oleva pelaaja
+
+            Returns:
+                palauttaa nappulan lailliset siirrot
+        """
+
         mvlist = []
         if abs(piecenmbr) == 1:
             mvlist.extend(self.can_pawn_movelist(x,y,piecenmbr, board,mover))
@@ -491,6 +715,19 @@ class Shakki:
         return mvlist
 
     def can_pawn_movelist(self,x,y,piecenmbr,board,mover):
+        """Funktio, joka etsii kaikki lailliset siirrot moukalle.
+
+            Args:
+                x: nappulan x-koordinaatti laudalla
+                y: nappulan y-koordinaatti laudalla
+                piecenmbr: nappula
+                board: lauta
+                mover: siirtovuorossa oleva pelaaja
+
+            Returns:
+                palauttaa nappulan lailliset siirrot
+        """
+
         movelist = []
         if piecenmbr == 1:
             if self.preview_move(x,y,-1,1,board,mover):
@@ -514,6 +751,19 @@ class Shakki:
         return movelist
 
     def can_knight_movelist(self,x,y,board,mover):
+        """Funktio, joka etsii kaikki lailliset siirrot ratsulle.
+
+            Args:
+                x: nappulan x-koordinaatti laudalla
+                y: nappulan y-koordinaatti laudalla
+                piecenmbr: nappula
+                board: lauta
+                mover: siirtovuorossa oleva pelaaja
+
+            Returns:
+                palauttaa nappulan lailliset siirrot
+        """
+
         movelist = []
         if self.preview_move(x,y,-2,-1,board,mover):
             movelist.append(self.move_as_UCI(x,y,-2,-1))
@@ -534,6 +784,19 @@ class Shakki:
         return movelist
 
     def can_bishop_movelist(self,x,y,board,mover):
+        """Funktio, joka etsii kaikki lailliset siirrot lähetille.
+
+            Args:
+                x: nappulan x-koordinaatti laudalla
+                y: nappulan y-koordinaatti laudalla
+                piecenmbr: nappula
+                board: lauta
+                mover: siirtovuorossa oleva pelaaja
+
+            Returns:
+                palauttaa nappulan lailliset siirrot
+        """
+
         movelist = []
         n = len(board)
         for dz in range(1,n):
@@ -548,6 +811,19 @@ class Shakki:
         return movelist
 
     def can_rook_movelist(self,x,y,board,mover):
+        """Funktio, joka etsii kaikki lailliset siirrot tornille.
+
+            Args:
+                x: nappulan x-koordinaatti laudalla
+                y: nappulan y-koordinaatti laudalla
+                piecenmbr: nappula
+                board: lauta
+                mover: siirtovuorossa oleva pelaaja
+
+            Returns:
+                palauttaa nappulan lailliset siirrot
+        """
+
         movelist = []
         n = len(board)
         for diff in range(1,n):
@@ -562,12 +838,38 @@ class Shakki:
         return movelist
 
     def can_queen_movelist(self,x,y,board,mover):
+        """Funktio, joka etsii kaikki lailliset siirrot kuningattarelle.
+
+            Args:
+                x: nappulan x-koordinaatti laudalla
+                y: nappulan y-koordinaatti laudalla
+                piecenmbr: nappula
+                board: lauta
+                mover: siirtovuorossa oleva pelaaja
+
+            Returns:
+                palauttaa nappulan lailliset siirrot
+        """
+
         movelist = []        
         movelist.extend(self.can_rook_movelist(x,y,board,mover))
         movelist.extend(self.can_bishop_movelist(x,y,board,mover))
         return movelist
     
     def can_king_movelist(self,x,y,board,mover):
+        """Funktio, joka etsii kaikki lailliset siirrot kuninkaalle.
+
+            Args:
+                x: nappulan x-koordinaatti laudalla
+                y: nappulan y-koordinaatti laudalla
+                piecenmbr: nappula
+                board: lauta
+                mover: siirtovuorossa oleva pelaaja
+
+            Returns:
+                palauttaa nappulan lailliset siirrot
+        """
+
         movelist = []
         if self.preview_move(x,y,1,0,board,mover):
             movelist.append(self.move_as_UCI(x,y,1,0))
@@ -588,6 +890,18 @@ class Shakki:
         return movelist
     
     def square_is_in_bounds(self,x,y,board = []):
+        """Funktio, joka tutkii, ovatko koordinaatit laudalla.
+
+            Args:
+                x: x-koordinaatti
+                y: y-koordinaatti
+                board: lauta
+
+            Returns:
+                True: jos sijainti (x,y) on laudalla
+                False: muuten
+        """
+
         if board == []:
             board = self.lauta
         if x>=0 and x<8 and y>=0 and y<8:
@@ -595,6 +909,19 @@ class Shakki:
         return False
     
     def move_as_UCI(self,x,y,dx,dy):
+        """Funktio, joka palauttaa siirron merkkijonona UCI-muotoisena(Universal Chess Interface).
+
+            Args:
+                x: x-koordinaatti
+                y: y-koordinaatti
+                dx: x-koordinaatin muutos
+                dy: y-koordinaatin muutos
+                board: lauta
+
+            Returns:
+                palauttaa siirron merkkijonoesityksen
+        """
+        
         style_dict_UCI_row = { 0:"a",1:"b",2:"c",3: "d",4:"e",5:"f",6:"g",7:"h"}
         style_dict_UCI_file = { 0:"8",1:"7",2:"6",3: "5",4:"4",5:"3",6:"2",7:"1"}
         return style_dict_UCI_row[y] + style_dict_UCI_file[x] + style_dict_UCI_row[y+dy] + style_dict_UCI_file[x+dx]  

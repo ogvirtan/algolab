@@ -9,7 +9,37 @@ sys.setrecursionlimit(10**6)
 dirname = os.path.dirname(__file__)
 
 class Engine:
+    """Luokka, joka sisältää tekoälyn toiminnallisuuden.
+
+        Attributes:
+            peli: Shakkipeli
+            depth: laskentasyvyys
+            mapped_values: heuristiikkafunktiossa käytettävät arvot nappuloille
+            white_king_pos: valkean kuninkaan sijainti
+            black_king_pos: mustan kuninkaan sijainti
+            movelist_white: valkean lailliset siirrot
+            threatlist_white: valkean uhkaamat ruudut
+            movelist_black: mustan lailliset siirrot
+            threatlist_black: mustan uhkaamat ruudut
+            piece_positions_all: kaikkien nappuloiden sijainnit
+            
+            pawn_pos_table: bitmap moukille
+            knight_pos_table: bitmap ratsuille
+            bishop_pos_table: bitmap läheteille
+            rook_pos_table: bitmap torneille
+            queen_pos_table: bitmap kuningattarille
+            king_pos_table_mid_game: bitmap kuninkaille, kun pelissä on yksikin kuningatar
+            king_pos_table_end_game: bitmap kuninkaille, kun kummallakaan pelaajalla ei ole kuningatarta
+    """
+
     def __init__(self,depth = 2, shakki=Shakki()):
+        """Luokan konstruktori, joka alustaa luokan attribuutit:
+
+            Args:
+                depth: laskentasyvyys, määrittelemättömänä 2
+                shakki: shakkipeli
+        """
+
         self.peli = shakki
         self.depth = depth
 
@@ -91,6 +121,9 @@ class Engine:
                                         [-50,-30,-30,-30,-30,-30,-30,-50]]
 
     def make_move(self):
+        """Funktio, jolla tekoäly toteuttaa siirron pelissä. Funktio alustaa tarvittavat listat, kutsuu minimax-funktiota, ja totetuttaa sen palauttaman siirron.
+        """
+
         self.generate_supporting_lists()        
         dupeboard = self.peli.lauta[:]
 
@@ -107,11 +140,39 @@ class Engine:
         self.peli.execute_move(choice[1],choice[2],choice[3]-choice[1],choice[4]-choice[2])
 
     def move_as_UCI(self,movetuple):
+        """Funktio, joka palauttaa siirron merkkijonona UCI-muotoisena(Universal Chess Interface). Funktiota käytetään vain testauksessa.
+
+            Args:
+                movetuple: sisältää vanhat ja uudet x- ja y-koordinaatit
+                board: lauta
+
+            Returns:
+                palauttaa siirron merkkijonoesityksen
+        """
+
         style_dict_UCI_row = { 0:"a",1:"b",2:"c",3: "d",4:"e",5:"f",6:"g",7:"h"}
         style_dict_UCI_file = { 0:"8",1:"7",2:"6",3: "5",4:"4",5:"3",6:"2",7:"1"}
         return style_dict_UCI_row[movetuple[2]] + style_dict_UCI_file[movetuple[1]] + style_dict_UCI_row[movetuple[4]] + style_dict_UCI_file[movetuple[3]]
 
     def alphabeta(self,lauta, depth,alpha,beta,maximizing_player,piece_eval,movelist_white, movelist_black, threatlist_white, threatlist_black):
+        """Funktio, joka palauttaa aina parhaan siirron laskentasyvyydellä. Funktio on minimax-algoritmi alpha-beta-karsinnalla.
+
+            Args:
+                lauta: pelilauta
+                depth: jäljellä oleva laskentasyvyys
+                alpha:
+                beta:
+                maximizing_player: 
+                piece_eval: pelaajien nappuloiden arvojen erotus
+                movelist_white: valkean lailliset siirrot
+                movelist_black: mustan lailliset siirrot
+                threatlist_white: valkean uhkaamat ruudut
+                threatlist_black: mustan uhkaamat ruudut
+
+            Returns:
+                Palauttaa parhaan siirron, ja sen tuottaman pelipuun heuristisen arvon
+        """
+
         best_move = None
         
         if maximizing_player:
@@ -156,7 +217,6 @@ class Engine:
                 quadtuple = self.manage_list_states(piece,x,y,dx,dy,maximizing_player,lauta,copymovewhite, copymoveblack, copythreatwhite, copythreatblack)
                 piece_eval -= self.mapped_values.get(target_sqr)
 
-                #piece eval muutos jos promotion
                 piece_eval -= self.mapped_values.get(piece)
                 piece_eval += self.mapped_values.get(lauta[dx][dy])                
 
@@ -194,7 +254,6 @@ class Engine:
                 quadtuple = self.manage_list_states(piece,x,y,dx,dy,maximizing_player,lauta,copymovewhite, copymoveblack, copythreatwhite, copythreatblack)
                 piece_eval -= self.mapped_values.get(target_sqr)
 
-                #piece eval muutos jos promotion
                 piece_eval -= self.mapped_values.get(piece)
                 piece_eval += self.mapped_values.get(lauta[dx][dy])
 
@@ -215,6 +274,12 @@ class Engine:
             return value, best_move   
 
     def generate_supporting_lists(self,board=[]):
+        """Funktio, joka alustaa siirtojen arviointiin tarvittavat listat.
+
+            Args:
+                board: lauta, jonka pohjalta listat tehdään
+        """
+
         if board == []:
             board = self.peli.lauta
 
@@ -247,6 +312,19 @@ class Engine:
                     self.threatlist_black.extend( move_threat_tuple[1])   
 
     def generate_move_threat_all(self,x,y, piecenmbr, maximizing_player,board):
+        """Funktio, joka lisää nappulan uhkaamat ruudut ja mahdolliset liikkeet omille listoille, ja palauttaa ne.
+
+            Args:
+                x: nappulan x-koordinaatti
+                y: nappulan y-koordinaatti
+                piecenmbr: nappula
+                maximizing_player: pelaaja, kenen nappula on käsittelyssä
+                board: lauta, jonka pohjalta listat tehdään
+            
+            Returns:
+                palauttaa tuplena nappulan uhkaamat ruudut ja mahdolliset siirrot
+        """
+
         movelist = []
         threatlist = []
         if piecenmbr == 1:
@@ -278,6 +356,19 @@ class Engine:
         return movelist, threatlist    
 
     def generate_move_threat_pawn(self,x,y,piecenmbr, maximizing_player,board):  
+        """Funktio, joka lisää moukan uhkaamat ruudut ja mahdolliset liikkeet omille listoille, ja palauttaa ne.
+
+            Args:
+                x: nappulan x-koordinaatti
+                y: nappulan y-koordinaatti
+                piecenmbr: nappula
+                maximizing_player: pelaaja, kenen nappula on käsittelyssä
+                board: lauta, jonka pohjalta listat tehdään
+            
+            Returns:
+                palauttaa tuplena moukan uhkaamat ruudut ja mahdolliset siirrot
+        """
+
         movelist = []
         threatlist = []
 
@@ -325,6 +416,19 @@ class Engine:
         return movelist , threatlist
     
     def generate_move_threat_knight(self,x,y,piecenmbr, maximizing_player,board):  
+        """Funktio, joka lisää ratsun uhkaamat ruudut ja mahdolliset liikkeet omille listoille, ja palauttaa ne.
+
+            Args:
+                x: nappulan x-koordinaatti
+                y: nappulan y-koordinaatti
+                piecenmbr: nappula
+                maximizing_player: pelaaja, kenen nappula on käsittelyssä
+                board: lauta, jonka pohjalta listat tehdään
+            
+            Returns:
+                palauttaa tuplena ratsun uhkaamat ruudut ja mahdolliset siirrot
+        """
+
         movelist = []
         threatlist = []
         cmod = -1
@@ -373,6 +477,19 @@ class Engine:
         return movelist , threatlist
     
     def generate_move_threat_bishop(self,x,y,piecenmbr,maximizing_player, board):
+        """Funktio, joka lisää lähetin uhkaamat ruudut ja mahdolliset liikkeet omille listoille, ja palauttaa ne.
+
+            Args:
+                x: nappulan x-koordinaatti
+                y: nappulan y-koordinaatti
+                piecenmbr: nappula
+                maximizing_player: pelaaja, kenen nappula on käsittelyssä
+                board: lauta, jonka pohjalta listat tehdään
+            
+            Returns:
+                palauttaa tuplena lähetin uhkaamat ruudut ja mahdolliset siirrot
+        """
+
         movelist = []
         threatlist = []
         n = 8
@@ -434,6 +551,19 @@ class Engine:
         return movelist,threatlist  
 
     def generate_move_threat_rook(self,x,y,piecenmbr,maximizing_player, board): 
+        """Funktio, joka lisää tornin uhkaamat ruudut ja mahdolliset liikkeet omille listoille, ja palauttaa ne.
+
+            Args:
+                x: nappulan x-koordinaatti
+                y: nappulan y-koordinaatti
+                piecenmbr: nappula
+                maximizing_player: pelaaja, kenen nappula on käsittelyssä
+                board: lauta, jonka pohjalta listat tehdään
+            
+            Returns:
+                palauttaa tuplena tornin uhkaamat ruudut ja mahdolliset siirrot
+        """
+
         movelist = []
         threatlist = []
         n = 8
@@ -495,6 +625,19 @@ class Engine:
         return movelist , threatlist
     
     def generate_move_threat_queen(self,x,y,piecenmbr,maximizing_player, board):
+        """Funktio, joka lisää kuningattaren uhkaamat ruudut ja mahdolliset liikkeet omille listoille, ja palauttaa ne.
+
+            Args:
+                x: nappulan x-koordinaatti
+                y: nappulan y-koordinaatti
+                piecenmbr: nappula
+                maximizing_player: pelaaja, kenen nappula on käsittelyssä
+                board: lauta, jonka pohjalta listat tehdään
+            
+            Returns:
+                palauttaa tuplena kuningattaren uhkaamat ruudut ja mahdolliset siirrot
+        """
+
         movelist = []
         threatlist = []
         n = 8
@@ -605,6 +748,15 @@ class Engine:
         return movelist, threatlist
 
     def generate_threatlists(self,board):
+        """Funktio, joka lisää kaikki kummankin pelaajan uhkaamat ruudut listalle, ja palauttaa listat.
+
+            Args:
+                board: lauta, jonka pohjalta listat tehdään
+            
+            Returns:
+                palauttaa tuplena molempien pelaajien uhkaamat ruudut
+        """
+
         threatlist_white = []
         threatlist_black = []
         for i in range(8):
@@ -618,6 +770,19 @@ class Engine:
         return threatlist_white, threatlist_black
     
     def generate_threat_all(self,x,y, piecenmbr, maximizing_player,board):
+        """Funktio, joka lisää nappulan uhkaamat ruudut listalle, ja palauttaa listan.
+
+            Args:
+                x: nappulan x-koordinaatti
+                y: nappulan y-koordinaatti
+                piecenmbr: nappula
+                maximizing_player: pelaaja, kenen nappula on käsittelyssä
+                board: lauta, jonka pohjalta listat tehdään
+            
+            Returns:
+                palauttaa listana nappulan uhkaamat ruudut
+        """
+
         threatlist = []
         if piecenmbr == 1:
             threatlist.extend(self.generate_threat_pawn(x,y,piecenmbr,maximizing_player,board))
@@ -635,6 +800,19 @@ class Engine:
         return threatlist    
 
     def generate_threat_pawn(self,x,y,piecenmbr, maximizing_player,board):  
+        """Funktio, joka lisää moukan uhkaamat ruudut listalle, ja palauttaa listan.
+
+            Args:
+                x: nappulan x-koordinaatti
+                y: nappulan y-koordinaatti
+                piecenmbr: nappula
+                maximizing_player: pelaaja, kenen nappula on käsittelyssä
+                board: lauta, jonka pohjalta listat tehdään
+            
+            Returns:
+                palauttaa listana moukan uhkaamat ruudut
+        """
+
         threatlist = []
 
         if maximizing_player:
@@ -657,6 +835,19 @@ class Engine:
         return threatlist
     
     def generate_threat_knight(self,x,y,piecenmbr, maximizing_player,board):  
+        """Funktio, joka lisää ratsun uhkaamat ruudut listalle, ja palauttaa listan.
+
+            Args:
+                x: nappulan x-koordinaatti
+                y: nappulan y-koordinaatti
+                piecenmbr: nappula
+                maximizing_player: pelaaja, kenen nappula on käsittelyssä
+                board: lauta, jonka pohjalta listat tehdään
+            
+            Returns:
+                palauttaa listana ratsun uhkaamat ruudut
+        """
+
         threatlist = []
         cmod = -1
         if maximizing_player:
@@ -681,6 +872,19 @@ class Engine:
         return threatlist
     
     def generate_threat_bishop(self,x,y,piecenmbr,maximizing_player, board):
+        """Funktio, joka lisää lähetin uhkaamat ruudut listalle, ja palauttaa listan.
+
+            Args:
+                x: nappulan x-koordinaatti
+                y: nappulan y-koordinaatti
+                piecenmbr: nappula
+                maximizing_player: pelaaja, kenen nappula on käsittelyssä
+                board: lauta, jonka pohjalta listat tehdään
+            
+            Returns:
+                palauttaa listana lähetin uhkaamat ruudut
+        """
+
         threatlist = []
         n = 8
         cmod = -1
@@ -721,6 +925,19 @@ class Engine:
         return threatlist  
 
     def generate_threat_rook(self,x,y,piecenmbr,maximizing_player, board): 
+        """Funktio, joka lisää tornin uhkaamat ruudut listalle, ja palauttaa listan.
+
+            Args:
+                x: nappulan x-koordinaatti
+                y: nappulan y-koordinaatti
+                piecenmbr: nappula
+                maximizing_player: pelaaja, kenen nappula on käsittelyssä
+                board: lauta, jonka pohjalta listat tehdään
+            
+            Returns:
+                palauttaa listana tornin uhkaamat ruudut
+        """
+
         threatlist = []
         n = 8
         cmod = -1
@@ -761,6 +978,19 @@ class Engine:
         return threatlist
     
     def generate_threat_queen(self,x,y,piecenmbr,maximizing_player, board):
+        """Funktio, joka lisää kuningattaren uhkaamat ruudut listalle, ja palauttaa listan.
+
+            Args:
+                x: nappulan x-koordinaatti
+                y: nappulan y-koordinaatti
+                piecenmbr: nappula
+                maximizing_player: pelaaja, kenen nappula on käsittelyssä
+                board: lauta, jonka pohjalta listat tehdään
+            
+            Returns:
+                palauttaa listana kuningattaren uhkaamat ruudut
+        """
+
         threatlist = []
         n = 8
         cmod = -1
@@ -830,6 +1060,19 @@ class Engine:
         return threatlist
     
     def generate_threat_king(self,x,y,piecenmbr,maximizing_player,board):
+        """Funktio, joka lisää kuninkaan uhkaamat ruudut listalle, ja palauttaa listan.
+
+            Args:
+                x: nappulan x-koordinaatti
+                y: nappulan y-koordinaatti
+                piecenmbr: nappula
+                maximizing_player: pelaaja, kenen nappula on käsittelyssä
+                board: lauta, jonka pohjalta listat tehdään
+            
+            Returns:
+                palauttaa listana kuninkaan uhkaamat ruudut
+        """
+
         threatlist = []
         cmod = -1
         if maximizing_player:
@@ -854,6 +1097,19 @@ class Engine:
         return threatlist    
 
     def generate_move_king(self,x,y,piecenmbr,maximizing_player, board):
+        """Funktio, joka lisää kuninkaan mahdolliset siirrot listalle, ja palauttaa listan.
+
+            Args:
+                x: nappulan x-koordinaatti
+                y: nappulan y-koordinaatti
+                piecenmbr: nappula
+                maximizing_player: pelaaja, kenen nappula on käsittelyssä
+                board: lauta, jonka pohjalta listat tehdään
+            
+            Returns:
+                palauttaa listana kuninkaan siirrot
+        """
+
         movelist = []
         cmod = -1
         if maximizing_player:
@@ -893,6 +1149,20 @@ class Engine:
         return movelist 
 
     def square_threatened(self,x,y,maximizing_player, threatlist_white, threatlist_black):
+        """Funktio, joka lisää nappulan uhkaamat ruudut listalle, ja palauttaa listan.
+
+            Args:
+                x: nappulan x-koordinaatti
+                y: nappulan y-koordinaatti
+                maximizing_player: pelaaja, jolle tutkitaan vastustajan uhkia
+                threatlist_white: valkean uhkaamat ruudut
+                threatlist_black: mustan uhkaamat ruudut
+            
+            Returns:
+                True: jos ruutu koordinaateilla (x,y) on vastustajan uhkaama
+                False: muuten
+        """
+
         if maximizing_player:
             for item in threatlist_black:
                 if item[3] == x and item[4] == y:
@@ -905,6 +1175,16 @@ class Engine:
             return False
 
     def manage_board(self,x,y,dx,dy,board):
+        """Funktio, joka muuttaa pelilaudan ja tarvittavat tukevat listat siirron jälkeiseen tilanteeseen.
+
+            Args:
+                x: nappulan x-koordinaatti
+                y: nappulan y-koordinaatti
+                dx: nappulan x-koordinaatti siirron jälkeen
+                dy: napppulan y-koordinaatti siirron jälkeen
+                board: lauta
+        """
+
         piece = board[x][y]
         self.piece_positions_all.remove((piece,x,y))
         try:
@@ -934,6 +1214,18 @@ class Engine:
         board[x][y] = 0
     
     def revert_board(self,x,y,dx,dy,target_sqr, piece ,board):
+        """Funktio, joka muuttaa pelilaudan ja tarvittavat tukevat listat takaisin siirtoa edeltävään tilanteeseen.
+
+            Args:
+                x: nappulan x-koordinaatti
+                y: nappulan y-koordinaatti
+                dx: nappulan x-koordinaatti siirron jälkeen
+                dy: napppulan y-koordinaatti siirron jälkeen
+                target_sqr: nappula, joka oli kohderuudussa ennen siirtoa
+                piece: nappula, jota siirrettiin
+                board: lauta
+        """
+
         self.piece_positions_all.remove((board[dx][dy],dx,dy))
         self.piece_positions_all.append((piece,x,y))
         if target_sqr != 0:
@@ -946,6 +1238,20 @@ class Engine:
             self.black_king_pos = (x,y)
     
     def king_not_checked_after_move(self,x,y,dx,dy,board, maximizing_player):
+        """Funktio, joka tarkistaa, onko oma kuningas uhattuna siirron jälkeen.
+
+            Args:
+                x: nappulan x-koordinaatti
+                y: nappulan y-koordinaatti
+                dx: nappulan x-koordinaatti siirron jälkeen
+                dy: napppulan y-koordinaatti siirron jälkeen
+                board: lauta
+                maximizing_player: liikkuva pelajaa
+            
+            Returns:
+                False: jos oman kuninkaan ruutu on uhattuna siirron jälkeen:
+                True: muuten
+        """
 
         piece = board[x][y]
         target_sqr = board[dx][dy]
@@ -968,6 +1274,23 @@ class Engine:
     
 
     def manage_list_states(self,piecenmbr, x,y,dx,dy,maximizing_player,board,copymovewhite, copymoveblack, copythreatwhite, copythreatblack):  
+        """Funktio, joka muuttaa siirron arviointeihin tarvittavia tukevia listoja.
+
+            Args:
+                x: nappulan x-koordinaatti
+                y: nappulan y-koordinaatti
+                dx: nappulan x-koordinaatti siirron jälkeen
+                dy: napppulan y-koordinaatti siirron jälkeen
+                maximizing_player: pelaaja
+                board: lauta
+                copymovewhite: kopio valkoisen siirtolistasta
+                copymoveblack: kopio mustan siirtolistasta
+                copythreatwhite: kopio valkoisen uhkalistasta
+                copythreatblack: kopio mustan uhkalistasta
+            
+            Returns:
+                palauttaa muokatut listat tuplena
+        """
 
         if maximizing_player:
 
@@ -1046,6 +1369,16 @@ class Engine:
         return copymovewhite, copymoveblack, copythreatwhite, copythreatblack
         
     def heuristic_function(self, poslist, piece_eval):
+        """Funktio, joka arvioi pelitilanteen heuristisen arvon bitmappien ja parametrina saadun evaluaation avulla.
+
+            Args:
+                poslist: lista kaikkien nappuloiden sijainneista
+                piece_eval: pelaajien nappuloiden arvojen erotus
+            
+            Returns:
+                Laskee kaikkien nappuloiden sijaintien arvot yhteen, lisää siihen piece_eval-arvon, ja palauttaa tämän summan
+        """
+
         summa = 0
         no_queens = True
         for item in poslist:
@@ -1085,6 +1418,16 @@ class Engine:
         return summa+piece_eval
     
     def sort_movelist(self, movelist, maximizing_player):
+        """Funktio, joka järjestää siirtolistalla olevat siirrot siten, että paras siirto olisi mahdollisimman lähellä indeksiä 0.
+
+            Args:
+                movelist: lista omista mahdollisista siirroista
+                maximizing_player: pelaaja
+            
+            Returns:
+                palauttaa järjestetyn siirtolistan
+        """
+
         returning_list = []
         indices = []
 
