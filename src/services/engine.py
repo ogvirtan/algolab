@@ -91,8 +91,7 @@ class Engine:
                                         [-50,-30,-30,-30,-30,-30,-30,-50]]
 
     def make_move(self):
-        self.generate_supporting_lists()
-        self.generate_supporting_lists()
+        self.generate_supporting_lists()        
         dupeboard = self.peli.lauta[:]
 
         piece_eval = 0
@@ -105,7 +104,6 @@ class Engine:
 
         choice = self.alphabeta(dupeboard,self.depth,float("-inf"),float("inf"),self.peli.whitetomove,piece_eval,self.movelist_white,self.movelist_black,self.threatlist_white, self.threatlist_black)[1]
         
-        #print("I chose:", self.move_as_UCI(choice))
         self.peli.execute_move(choice[1],choice[2],choice[3]-choice[1],choice[4]-choice[2])
 
     def move_as_UCI(self,movetuple):
@@ -231,19 +229,19 @@ class Engine:
                 piece = board[i][j]
                 if piece != 0:
                     self.piece_positions_all.append((piece, i, j))
+                    if piece == 7:
+                        self.white_king_pos = (i,j)
+                    if piece == -7:
+                        self.black_king_pos = (i,j) 
 
         for i in range(8):
             for j in range(8):
                 piece = board[i][j]
-                if piece > 0:
-                    if piece == 7:
-                        self.white_king_pos = (i,j)  
+                if piece > 0:    
                     move_threat_tuple = self.generate_move_threat_all(i,j,abs(piece),True,board)
                     self.movelist_white.extend(move_threat_tuple[0])
                     self.threatlist_white.extend(move_threat_tuple[1])
                 elif piece < 0:
-                    if piece == -7:
-                        self.black_king_pos = (i,j) 
                     move_threat_tuple = self.generate_move_threat_all(i,j,abs(piece),False,board)
                     self.movelist_black.extend(move_threat_tuple[0])
                     self.threatlist_black.extend( move_threat_tuple[1])   

@@ -155,6 +155,19 @@ class TestEngine (unittest.TestCase):
         self.assertEqual(self.eng.alphabeta(self.eng.peli.lauta,self.eng.depth,float("-inf"),float("inf"),False,0,self.eng.movelist_white,self.eng.movelist_black,self.eng.threatlist_white,self.eng.threatlist_black)[1], None)
         self.assertGreaterEqual(self.eng.alphabeta(self.eng.peli.lauta,self.eng.depth,float("-inf"),float("inf"),False,0,self.eng.movelist_white,self.eng.movelist_black,self.eng.threatlist_white,self.eng.threatlist_black)[0], 100000)
     
+    def test_make_move_changes_game_state_to_endstate_on_mate(self):
+        self.eng.peli.set_board([[0, 0, 6, 0, -7, 0,0,0], 
+                                [0, 0, 0, 0, 0, 0, 0, 0], 
+                                [0, 0, 0, 0, 7, 0, 0, 0], 
+                                [0, 0, 0, 0, 0, 0, 0, 0], 
+                                [0, 0, 0, 0, 0, 0, 0, 0], 
+                                [0, 0, 0, 0, 0, 0, 0, 0], 
+                                [0, 0, 0, 0, 0, 0, 0, 0], 
+                                [0, 0, 0, 0, 0, 0, 0, 0]])
+        self.eng.peli.change_mover()     
+        self.eng.make_move()                  
+        self.assertEqual(self.eng.peli.gamestatus, "CHECKMATE")
+
     def test_alphabeta_returns_inf_at_checkmate_with_black(self):
         self.eng.peli.set_board([[0, 0, -6, 0, 7, 0,0,0], 
                                 [0, 0, 0, 0, 0, 0, 0, 0], 
