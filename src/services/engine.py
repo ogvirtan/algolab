@@ -8,6 +8,7 @@ sys.setrecursionlimit(10**6)
 
 dirname = os.path.dirname(__file__)
 
+
 class Engine:
     """Luokka, joka sisältää tekoälyn toiminnallisuuden.
 
@@ -22,7 +23,7 @@ class Engine:
             movelist_black: mustan lailliset siirrot
             threatlist_black: mustan uhkaamat ruudut
             piece_positions_all: kaikkien nappuloiden sijainnit
-            
+
             pawn_pos_table: bitmap moukille
             knight_pos_table: bitmap ratsuille
             bishop_pos_table: bitmap läheteille
@@ -32,7 +33,7 @@ class Engine:
             king_pos_table_end_game: bitmap kuninkaille, kun kummallakaan pelaajalla ei ole kuningatarta
     """
 
-    def __init__(self,depth = 2, shakki=Shakki()):
+    def __init__(self, depth=2, shakki=Shakki()):
         """Luokan konstruktori, joka alustaa luokan attribuutit:
 
             Args:
@@ -43,10 +44,11 @@ class Engine:
         self.peli = shakki
         self.depth = depth
 
-        self.mapped_values = {1:100,3:320,4:330,5:500,6:900, 7:20000,-1:-100,-3:-320,-4:-330,-5:-500,-6:-900, -7:-20000, 0:0}
+        self.mapped_values = {1: 100, 3: 320, 4: 330, 5: 500, 6: 900, 7: 20000, -
+                              1: -100, -3: -320, -4: -330, -5: -500, -6: -900, -7: -20000, 0: 0}
 
-        self.white_king_pos = (7,4)
-        self.black_king_pos = (0,4)
+        self.white_king_pos = (7, 4)
+        self.black_king_pos = (0, 4)
 
         self.movelist_white = []
         self.threatlist_white = []
@@ -56,75 +58,74 @@ class Engine:
 
         self.generate_supporting_lists()
 
-
         self.pawn_pos_table = [[0,   0,   0,   0,   0,   0, 0, 0],
                                [50, 50, 50, 50, 50, 50, 50, 50],
-                                [10, 10, 20, 30, 30, 20, 10, 10],
-                                [5,  5, 10, 25, 25, 10,  5,  5],
-                                [0,  0,  0, 20, 20,  0,  0,  0],
-                                [5, -5,-10,  0,  0,-10, -5,  5],
-                                [5, 10, 10,-20,-20, 10, 10,  5],
+                               [10, 10, 20, 30, 30, 20, 10, 10],
+                               [5,  5, 10, 25, 25, 10,  5,  5],
+                               [0,  0,  0, 20, 20,  0,  0,  0],
+                               [5, -5, -10,  0,  0, -10, -5,  5],
+                               [5, 10, 10, -20, -20, 10, 10,  5],
                                [0,  0,  0,  0,  0,  0,  0,  0]]
 
-        self.knight_pos_table = [[-50,-40,-30,-30,-30,-30,-40,-50,],
-                                [-40,-20,  0,  0,  0,  0,-20,-40],
-                                [-30,  0, 10, 15, 15, 10,  0,-30],
-                                [-30,  5, 15, 20, 20, 15,  5,-30],
-                                [-30,  0, 15, 20, 20, 15,  0,-30],
-                                [-30,  5, 10, 15, 15, 10,  5,-30],
-                                [-40,-20,  0,  5,  5,  0,-20,-40],
-                                [-50,-40,-30,-30,-30,-30,-40,-50]]
+        self.knight_pos_table = [[-50, -40, -30, -30, -30, -30, -40, -50,],
+                                 [-40, -20,  0,  0,  0,  0, -20, -40],
+                                 [-30,  0, 10, 15, 15, 10,  0, -30],
+                                 [-30,  5, 15, 20, 20, 15,  5, -30],
+                                 [-30,  0, 15, 20, 20, 15,  0, -30],
+                                 [-30,  5, 10, 15, 15, 10,  5, -30],
+                                 [-40, -20,  0,  5,  5,  0, -20, -40],
+                                 [-50, -40, -30, -30, -30, -30, -40, -50]]
 
-        self.bishop_pos_table = [[-20,-10,-10,-10,-10,-10,-10,-20],
-                                [-10,  0,  0,  0,  0,  0,  0,-10],
-                                [-10,  0,  5, 10, 10,  5,  0,-10],
-                                [-10,  5,  5, 10, 10,  5,  5,-10],
-                                [-10,  0, 10, 10, 10, 10,  0,-10],
-                                [-10, 10, 10, 10, 10, 10, 10,-10],
-                                [-10,  5,  0,  0,  0,  0,  5,-10],
-                                [-20,-10,-10,-10,-10,-10,-10,-20]]
+        self.bishop_pos_table = [[-20, -10, -10, -10, -10, -10, -10, -20],
+                                 [-10,  0,  0,  0,  0,  0,  0, -10],
+                                 [-10,  0,  5, 10, 10,  5,  0, -10],
+                                 [-10,  5,  5, 10, 10,  5,  5, -10],
+                                 [-10,  0, 10, 10, 10, 10,  0, -10],
+                                 [-10, 10, 10, 10, 10, 10, 10, -10],
+                                 [-10,  5,  0,  0,  0,  0,  5, -10],
+                                 [-20, -10, -10, -10, -10, -10, -10, -20]]
 
         self.rook_pos_table = [[0,  0,  0,  0,  0,  0,  0,  0],
-                                [5, 10, 10, 10, 10, 10, 10,  5],
-                                [-5,  0,  0,  0,  0,  0,  0, -5],
-                                [-5,  0,  0,  0,  0,  0,  0, -5],
-                                [-5,  0,  0,  0,  0,  0,  0, -5],
-                                [-5,  0,  0,  0,  0,  0,  0, -5],
-                                [-5,  0,  0,  0,  0,  0,  0, -5],
-                                [0,  0,  0,  5,  5,  0,  0,  0]]
+                               [5, 10, 10, 10, 10, 10, 10,  5],
+                               [-5,  0,  0,  0,  0,  0,  0, -5],
+                               [-5,  0,  0,  0,  0,  0,  0, -5],
+                               [-5,  0,  0,  0,  0,  0,  0, -5],
+                               [-5,  0,  0,  0,  0,  0,  0, -5],
+                               [-5,  0,  0,  0,  0,  0,  0, -5],
+                               [0,  0,  0,  5,  5,  0,  0,  0]]
 
-        self.queen_pos_table = [[-20,-10,-10, -5, -5,-10,-10,-20],
-                                [-10,  0,  0,  0,  0,  0,  0,-10],
-                                [-10,  0,  5,  5,  5,  5,  0,-10],
+        self.queen_pos_table = [[-20, -10, -10, -5, -5, -10, -10, -20],
+                                [-10,  0,  0,  0,  0,  0,  0, -10],
+                                [-10,  0,  5,  5,  5,  5,  0, -10],
                                 [-5,  0,  5,  5,  5,  5,  0, -5],
                                 [0,  0,  5,  5,  5,  5,  0, -5],
-                                [-10,  5,  5,  5,  5,  5,  0,-10],
-                                [-10,  0,  5,  0,  0,  0,  0,-10],
-                                [-20,-10,-10, -5, -5,-10,-10,-20]]
+                                [-10,  5,  5,  5,  5,  5,  0, -10],
+                                [-10,  0,  5,  0,  0,  0,  0, -10],
+                                [-20, -10, -10, -5, -5, -10, -10, -20]]
 
-        self.king_pos_table_mid_game = [[-30,-40,-40,-50,-50,-40,-40,-30,],
-                                        [-30,-40,-40,-50,-50,-40,-40,-30,],
-                                        [-30,-40,-40,-50,-50,-40,-40,-30,],
-                                        [-30,-40,-40,-50,-50,-40,-40,-30,],
-                                        [-20,-30,-30,-40,-40,-30,-30,-20],
-                                        [-10,-20,-20,-20,-20,-20,-20,-10],
-                                        [ 20, 20,  0,  0,  0,  0, 20, 20],
+        self.king_pos_table_mid_game = [[-30, -40, -40, -50, -50, -40, -40, -30,],
+                                        [-30, -40, -40, -50, -50, -40, -40, -30,],
+                                        [-30, -40, -40, -50, -50, -40, -40, -30,],
+                                        [-30, -40, -40, -50, -50, -40, -40, -30,],
+                                        [-20, -30, -30, -40, -40, -30, -30, -20],
+                                        [-10, -20, -20, -20, -20, -20, -20, -10],
+                                        [20, 20,  0,  0,  0,  0, 20, 20],
                                         [20, 30, 10,  0,  0, 10, 30, 20]]
-    
-        self.king_pos_table_end_game = [[-50,-40,-30,-20,-20,-30,-40,-50],
-                                        [-30,-20,-10,  0,  0,-10,-20,-30],
-                                        [-30,-10, 20, 30, 30, 20,-10,-30],
-                                        [-30,-10, 30, 40, 40, 30,-10,-30],
-                                        [-30,-10, 30, 40, 40, 30,-10,-30],
-                                        [-30,-10, 20, 30, 30, 20,-10,-30],
-                                        [-30,-30,  0,  0,  0,  0,-30,-30],
-                                        [-50,-30,-30,-30,-30,-30,-30,-50]]
+
+        self.king_pos_table_end_game = [[-50, -40, -30, -20, -20, -30, -40, -50],
+                                        [-30, -20, -10,  0,  0, -10, -20, -30],
+                                        [-30, -10, 20, 30, 30, 20, -10, -30],
+                                        [-30, -10, 30, 40, 40, 30, -10, -30],
+                                        [-30, -10, 30, 40, 40, 30, -10, -30],
+                                        [-30, -10, 20, 30, 30, 20, -10, -30],
+                                        [-30, -30,  0,  0,  0,  0, -30, -30],
+                                        [-50, -30, -30, -30, -30, -30, -30, -50]]
 
     def make_move(self):
         """Funktio, jolla tekoäly toteuttaa siirron pelissä. Funktio alustaa tarvittavat listat, kutsuu minimax-funktiota, ja totetuttaa sen palauttaman siirron.
         """
 
-        self.generate_supporting_lists()        
+        self.generate_supporting_lists()
         dupeboard = self.peli.lauta[:]
 
         piece_eval = 0
@@ -135,11 +136,13 @@ class Engine:
                 if piece != 0:
                     piece_eval += self.mapped_values.get(piece)
 
-        choice = self.alphabeta(dupeboard,self.depth,float("-inf"),float("inf"),self.peli.whitetomove,piece_eval,self.movelist_white,self.movelist_black,self.threatlist_white, self.threatlist_black)[1]
-        
-        self.peli.execute_move(choice[1],choice[2],choice[3]-choice[1],choice[4]-choice[2])
+        choice = self.alphabeta(dupeboard, self.depth, float("-inf"), float("inf"), self.peli.whitetomove,
+                                piece_eval, self.movelist_white, self.movelist_black, self.threatlist_white, self.threatlist_black)[1]
 
-    def move_as_UCI(self,movetuple):
+        self.peli.execute_move(
+            choice[1], choice[2], choice[3]-choice[1], choice[4]-choice[2])
+
+    def move_as_UCI(self, movetuple):
         """Funktio, joka palauttaa siirron merkkijonona UCI-muotoisena(Universal Chess Interface). Funktiota käytetään vain testauksessa.
 
             Args:
@@ -150,11 +153,13 @@ class Engine:
                 palauttaa siirron merkkijonoesityksen
         """
 
-        style_dict_UCI_row = { 0:"a",1:"b",2:"c",3: "d",4:"e",5:"f",6:"g",7:"h"}
-        style_dict_UCI_file = { 0:"8",1:"7",2:"6",3: "5",4:"4",5:"3",6:"2",7:"1"}
+        style_dict_UCI_row = {0: "a", 1: "b", 2: "c",
+                              3: "d", 4: "e", 5: "f", 6: "g", 7: "h"}
+        style_dict_UCI_file = {0: "8", 1: "7", 2: "6",
+                               3: "5", 4: "4", 5: "3", 6: "2", 7: "1"}
         return style_dict_UCI_row[movetuple[2]] + style_dict_UCI_file[movetuple[1]] + style_dict_UCI_row[movetuple[4]] + style_dict_UCI_file[movetuple[3]]
 
-    def alphabeta(self,lauta, depth,alpha,beta,maximizing_player,piece_eval,movelist_white, movelist_black, threatlist_white, threatlist_black):
+    def alphabeta(self, lauta, depth, alpha, beta, maximizing_player, piece_eval, movelist_white, movelist_black, threatlist_white, threatlist_black):
         """Funktio, joka palauttaa aina parhaan siirron laskentasyvyydellä. Funktio on minimax-algoritmi alpha-beta-karsinnalla.
 
             Args:
@@ -174,7 +179,7 @@ class Engine:
         """
 
         best_move = None
-        
+
         if maximizing_player:
             mbyempty = movelist_white
         else:
@@ -193,9 +198,9 @@ class Engine:
                 return 0, best_move
 
         if depth == 0:
-            return self.heuristic_function(self.piece_positions_all,piece_eval), best_move
-        
-        siirtolista = self.sort_movelist(mbyempty,maximizing_player)
+            return self.heuristic_function(self.piece_positions_all, piece_eval), best_move
+
+        siirtolista = self.sort_movelist(mbyempty, maximizing_player)
 
         if maximizing_player:
             value = -1000000
@@ -212,26 +217,28 @@ class Engine:
                 dy = siirto[4]
                 target_sqr = lauta[dx][dy]
 
-                self.manage_board(x,y,dx,dy,lauta)
+                self.manage_board(x, y, dx, dy, lauta)
 
-                quadtuple = self.manage_list_states(piece,x,y,dx,dy,maximizing_player,lauta,copymovewhite, copymoveblack, copythreatwhite, copythreatblack)
+                quadtuple = self.manage_list_states(
+                    piece, x, y, dx, dy, maximizing_player, lauta, copymovewhite, copymoveblack, copythreatwhite, copythreatblack)
                 piece_eval -= self.mapped_values.get(target_sqr)
 
                 piece_eval -= self.mapped_values.get(piece)
-                piece_eval += self.mapped_values.get(lauta[dx][dy])                
+                piece_eval += self.mapped_values.get(lauta[dx][dy])
 
-                value = max(value,self.alphabeta(lauta,depth-1,alpha,beta,False,piece_eval,quadtuple[0], quadtuple[1], quadtuple[2], quadtuple[3])[0])                
+                value = max(value, self.alphabeta(lauta, depth-1, alpha, beta, False,
+                            piece_eval, quadtuple[0], quadtuple[1], quadtuple[2], quadtuple[3])[0])
 
-                piece_eval += self.mapped_values.get(target_sqr) 
+                piece_eval += self.mapped_values.get(target_sqr)
                 piece_eval += self.mapped_values.get(piece)
                 piece_eval -= self.mapped_values.get(lauta[dx][dy])
 
-                self.revert_board(x,y,dx,dy,target_sqr,piece,lauta)
+                self.revert_board(x, y, dx, dy, target_sqr, piece, lauta)
                 if value >= beta:
                     break
                 if value > alpha:
-                    best_move = siirto 
-                    alpha = max(alpha,value)
+                    best_move = siirto
+                    alpha = max(alpha, value)
 
             return value, best_move
 
@@ -249,21 +256,23 @@ class Engine:
                 dx = siirto[3]
                 dy = siirto[4]
                 target_sqr = lauta[dx][dy]
-                self.manage_board(x,y,dx,dy,lauta)
-               
-                quadtuple = self.manage_list_states(piece,x,y,dx,dy,maximizing_player,lauta,copymovewhite, copymoveblack, copythreatwhite, copythreatblack)
+                self.manage_board(x, y, dx, dy, lauta)
+
+                quadtuple = self.manage_list_states(
+                    piece, x, y, dx, dy, maximizing_player, lauta, copymovewhite, copymoveblack, copythreatwhite, copythreatblack)
                 piece_eval -= self.mapped_values.get(target_sqr)
 
                 piece_eval -= self.mapped_values.get(piece)
                 piece_eval += self.mapped_values.get(lauta[dx][dy])
 
-                value = min(value,self.alphabeta(lauta,depth-1,alpha,beta,True,piece_eval,quadtuple[0], quadtuple[1], quadtuple[2], quadtuple[3])[0])  
+                value = min(value, self.alphabeta(lauta, depth-1, alpha, beta, True,
+                            piece_eval, quadtuple[0], quadtuple[1], quadtuple[2], quadtuple[3])[0])
 
-                piece_eval += self.mapped_values.get(target_sqr) 
+                piece_eval += self.mapped_values.get(target_sqr)
                 piece_eval += self.mapped_values.get(piece)
                 piece_eval -= self.mapped_values.get(lauta[dx][dy])
 
-                self.revert_board(x,y,dx,dy,target_sqr,piece,lauta)
+                self.revert_board(x, y, dx, dy, target_sqr, piece, lauta)
 
                 if value <= alpha:
                     break
@@ -271,9 +280,9 @@ class Engine:
                     best_move = siirto
                     beta = min(beta, value)
 
-            return value, best_move   
+            return value, best_move
 
-    def generate_supporting_lists(self,board=[]):
+    def generate_supporting_lists(self, board=[]):
         """Funktio, joka alustaa siirtojen arviointiin tarvittavat listat.
 
             Args:
@@ -295,23 +304,25 @@ class Engine:
                 if piece != 0:
                     self.piece_positions_all.append((piece, i, j))
                     if piece == 7:
-                        self.white_king_pos = (i,j)
+                        self.white_king_pos = (i, j)
                     if piece == -7:
-                        self.black_king_pos = (i,j) 
+                        self.black_king_pos = (i, j)
 
         for i in range(8):
             for j in range(8):
                 piece = board[i][j]
-                if piece > 0:    
-                    move_threat_tuple = self.generate_move_threat_all(i,j,abs(piece),True,board)
+                if piece > 0:
+                    move_threat_tuple = self.generate_move_threat_all(
+                        i, j, abs(piece), True, board)
                     self.movelist_white.extend(move_threat_tuple[0])
                     self.threatlist_white.extend(move_threat_tuple[1])
                 elif piece < 0:
-                    move_threat_tuple = self.generate_move_threat_all(i,j,abs(piece),False,board)
+                    move_threat_tuple = self.generate_move_threat_all(
+                        i, j, abs(piece), False, board)
                     self.movelist_black.extend(move_threat_tuple[0])
-                    self.threatlist_black.extend( move_threat_tuple[1])   
+                    self.threatlist_black.extend(move_threat_tuple[1])
 
-    def generate_move_threat_all(self,x,y, piecenmbr, maximizing_player,board):
+    def generate_move_threat_all(self, x, y, piecenmbr, maximizing_player, board):
         """Funktio, joka lisää nappulan uhkaamat ruudut ja mahdolliset liikkeet omille listoille, ja palauttaa ne.
 
             Args:
@@ -320,7 +331,7 @@ class Engine:
                 piecenmbr: nappula
                 maximizing_player: pelaaja, kenen nappula on käsittelyssä
                 board: lauta, jonka pohjalta listat tehdään
-            
+
             Returns:
                 palauttaa tuplena nappulan uhkaamat ruudut ja mahdolliset siirrot
         """
@@ -328,34 +339,41 @@ class Engine:
         movelist = []
         threatlist = []
         if piecenmbr == 1:
-            move_threat_tuple = self.generate_move_threat_pawn(x,y,piecenmbr,maximizing_player,board)
+            move_threat_tuple = self.generate_move_threat_pawn(
+                x, y, piecenmbr, maximizing_player, board)
             movelist.extend(move_threat_tuple[0])
             threatlist.extend(move_threat_tuple[1])
         elif piecenmbr == 3:
-            move_threat_tuple = self.generate_move_threat_knight(x,y,piecenmbr,maximizing_player,board)
+            move_threat_tuple = self.generate_move_threat_knight(
+                x, y, piecenmbr, maximizing_player, board)
             movelist.extend(move_threat_tuple[0])
             threatlist.extend(move_threat_tuple[1])
         elif piecenmbr == 4:
-            move_threat_tuple = self.generate_move_threat_bishop(x,y,piecenmbr,maximizing_player,board)
+            move_threat_tuple = self.generate_move_threat_bishop(
+                x, y, piecenmbr, maximizing_player, board)
             movelist.extend(move_threat_tuple[0])
             threatlist.extend(move_threat_tuple[1])
         elif piecenmbr == 5:
-            move_threat_tuple = self.generate_move_threat_rook(x,y,piecenmbr,maximizing_player,board)
+            move_threat_tuple = self.generate_move_threat_rook(
+                x, y, piecenmbr, maximizing_player, board)
             movelist.extend(move_threat_tuple[0])
             threatlist.extend(move_threat_tuple[1])
         elif piecenmbr == 6:
-            move_threat_tuple = self.generate_move_threat_queen(x,y,piecenmbr,maximizing_player,board)
+            move_threat_tuple = self.generate_move_threat_queen(
+                x, y, piecenmbr, maximizing_player, board)
             movelist.extend(move_threat_tuple[0])
             threatlist.extend(move_threat_tuple[1])
         elif piecenmbr == 7:
-            threat_king = self.generate_threat_king(x,y,piecenmbr,maximizing_player,board)
+            threat_king = self.generate_threat_king(
+                x, y, piecenmbr, maximizing_player, board)
             threatlist.extend(threat_king)
-            move_king = self.generate_move_king(x,y,piecenmbr,maximizing_player,board)
+            move_king = self.generate_move_king(
+                x, y, piecenmbr, maximizing_player, board)
             movelist.extend(move_king)
 
-        return movelist, threatlist    
+        return movelist, threatlist
 
-    def generate_move_threat_pawn(self,x,y,piecenmbr, maximizing_player,board):  
+    def generate_move_threat_pawn(self, x, y, piecenmbr, maximizing_player, board):
         """Funktio, joka lisää moukan uhkaamat ruudut ja mahdolliset liikkeet omille listoille, ja palauttaa ne.
 
             Args:
@@ -364,7 +382,7 @@ class Engine:
                 piecenmbr: nappula
                 maximizing_player: pelaaja, kenen nappula on käsittelyssä
                 board: lauta, jonka pohjalta listat tehdään
-            
+
             Returns:
                 palauttaa tuplena moukan uhkaamat ruudut ja mahdolliset siirrot
         """
@@ -374,48 +392,48 @@ class Engine:
 
         if maximizing_player:
             cmod = 1
-            if 0<= x-1 < 8:
+            if 0 <= x-1 < 8:
                 if board[x-1][y] == 0:
-                    if self.king_not_checked_after_move(x,y,x-1,y,board,maximizing_player):
-                        movelist.append((cmod*piecenmbr,x,y,x-1,y))
-                if 0 <= y-1 <8:
-                    if board[x-1][y-1] in {-1,-3,-4,-5,-6}:
-                        if self.king_not_checked_after_move(x,y,x-1,y-1,board,maximizing_player):    
-                            movelist.append((cmod*piecenmbr,x,y,x-1,y-1))
-                    threatlist.append((cmod*piecenmbr,x,y,x-1,y-1))
-                if 0 <= y+1 <8:
-                    if board[x-1][y+1] in {-1,-3,-4,-5,-6}:
-                        if self.king_not_checked_after_move(x,y,x-1,y+1,board,maximizing_player):
-                            movelist.append((cmod*piecenmbr,x,y,x-1,y+1))
-                    threatlist.append((cmod*piecenmbr,x,y,x-1,y+1))
+                    if self.king_not_checked_after_move(x, y, x-1, y, board, maximizing_player):
+                        movelist.append((cmod*piecenmbr, x, y, x-1, y))
+                if 0 <= y-1 < 8:
+                    if board[x-1][y-1] in {-1, -3, -4, -5, -6}:
+                        if self.king_not_checked_after_move(x, y, x-1, y-1, board, maximizing_player):
+                            movelist.append((cmod*piecenmbr, x, y, x-1, y-1))
+                    threatlist.append((cmod*piecenmbr, x, y, x-1, y-1))
+                if 0 <= y+1 < 8:
+                    if board[x-1][y+1] in {-1, -3, -4, -5, -6}:
+                        if self.king_not_checked_after_move(x, y, x-1, y+1, board, maximizing_player):
+                            movelist.append((cmod*piecenmbr, x, y, x-1, y+1))
+                    threatlist.append((cmod*piecenmbr, x, y, x-1, y+1))
             if x == 6:
                 if board[x-1][y] == 0 and board[x-2][y] == 0:
-                    if self.king_not_checked_after_move(x,y,x-2,y,board,maximizing_player):
-                        movelist.append((cmod*piecenmbr,x,y,x-2,y)) 
-        else:       
+                    if self.king_not_checked_after_move(x, y, x-2, y, board, maximizing_player):
+                        movelist.append((cmod*piecenmbr, x, y, x-2, y))
+        else:
             cmod = -1
 
-            if 0<= x+1 < 8:
+            if 0 <= x+1 < 8:
                 if board[x+1][y] == 0:
-                    if self.king_not_checked_after_move(x,y,x+1,y,board,maximizing_player):
-                        movelist.append((cmod*piecenmbr,x,y,x+1,y))
-                if 0 <= y-1 <8:
-                    if board[x+1][y-1] in {1,3,4,5,6}:
-                        if self.king_not_checked_after_move(x,y,x+1,y-1,board,maximizing_player):
-                            movelist.append((cmod*piecenmbr,x,y,x+1,y-1))
-                    threatlist.append((cmod*piecenmbr,x,y,x+1,y-1))
-                if 0 <= y+1 <8:
-                    if board[x+1][y+1] in {1,3,4,5,6}:
-                        if self.king_not_checked_after_move(x,y,x+1,y+1,board,maximizing_player):
-                            movelist.append((cmod*piecenmbr,x,y,x+1,y+1))
-                    threatlist.append((cmod*piecenmbr,x,y,x+1,y+1))
+                    if self.king_not_checked_after_move(x, y, x+1, y, board, maximizing_player):
+                        movelist.append((cmod*piecenmbr, x, y, x+1, y))
+                if 0 <= y-1 < 8:
+                    if board[x+1][y-1] in {1, 3, 4, 5, 6}:
+                        if self.king_not_checked_after_move(x, y, x+1, y-1, board, maximizing_player):
+                            movelist.append((cmod*piecenmbr, x, y, x+1, y-1))
+                    threatlist.append((cmod*piecenmbr, x, y, x+1, y-1))
+                if 0 <= y+1 < 8:
+                    if board[x+1][y+1] in {1, 3, 4, 5, 6}:
+                        if self.king_not_checked_after_move(x, y, x+1, y+1, board, maximizing_player):
+                            movelist.append((cmod*piecenmbr, x, y, x+1, y+1))
+                    threatlist.append((cmod*piecenmbr, x, y, x+1, y+1))
             if x == 1:
                 if board[x+1][y] == 0 and board[x+2][y] == 0:
-                    if self.king_not_checked_after_move(x,y,x+2,y,board,maximizing_player):
-                        movelist.append((cmod*piecenmbr,x,y,x+2,y))
-        return movelist , threatlist
-    
-    def generate_move_threat_knight(self,x,y,piecenmbr, maximizing_player,board):  
+                    if self.king_not_checked_after_move(x, y, x+2, y, board, maximizing_player):
+                        movelist.append((cmod*piecenmbr, x, y, x+2, y))
+        return movelist, threatlist
+
+    def generate_move_threat_knight(self, x, y, piecenmbr, maximizing_player, board):
         """Funktio, joka lisää ratsun uhkaamat ruudut ja mahdolliset liikkeet omille listoille, ja palauttaa ne.
 
             Args:
@@ -424,7 +442,7 @@ class Engine:
                 piecenmbr: nappula
                 maximizing_player: pelaaja, kenen nappula on käsittelyssä
                 board: lauta, jonka pohjalta listat tehdään
-            
+
             Returns:
                 palauttaa tuplena ratsun uhkaamat ruudut ja mahdolliset siirrot
         """
@@ -434,49 +452,49 @@ class Engine:
         cmod = -1
         if maximizing_player:
             cmod = 1
-        if 0<= x-2 < 8 and 0 <= y-1 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x-2,y-1))
-            if board[x-2][y-1] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7}:
-                if self.king_not_checked_after_move(x,y,x-2,y-1,board,maximizing_player):
-                    movelist.append((cmod*piecenmbr,x,y,x-2,y-1))
-        if 0<= x-2 < 8 and 0 <= y+1 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x-2,y+1))
-            if board[x-2][y+1] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7}:
-                if self.king_not_checked_after_move(x,y,x-2,y+1,board,maximizing_player):
-                    movelist.append((cmod*piecenmbr,x,y,x-2,y+1))
-        if 0<= x-1 < 8 and 0 <= y-2 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x-1,y-2))
-            if board[x-1][y-2] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7}:
-                if self.king_not_checked_after_move(x,y,x-1,y-2,board,maximizing_player):
-                    movelist.append((cmod*piecenmbr,x,y,x-1,y-2))
-        if 0<= x-1 < 8 and 0 <= y+2 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x-1,y+2))
-            if board[x-1][y+2] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7}:
-                if self.king_not_checked_after_move(x,y,x-1,y+2,board,maximizing_player):
-                    movelist.append((cmod*piecenmbr,x,y,x-1,y+2))
-        if 0<= x+2 < 8 and 0 <= y+1 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x+2,y+1))
-            if board[x+2][y+1] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7}:
-                if self.king_not_checked_after_move(x,y,x+2,y+1,board,maximizing_player):
-                    movelist.append((cmod*piecenmbr,x,y,x+2,y+1))
-        if 0<= x+2 < 8 and 0 <= y-1 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x+2,y-1))
-            if board[x+2][y-1] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7}:
-                if self.king_not_checked_after_move(x,y,x+2,y-1,board,maximizing_player):
-                    movelist.append((cmod*piecenmbr,x,y,x+2,y-1))
-        if 0<= x+1 < 8 and 0 <= y-2 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x+1,y-2))
-            if board[x+1][y-2] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7}:
-                if self.king_not_checked_after_move(x,y,x+1,y-2,board,maximizing_player):
-                    movelist.append((cmod*piecenmbr,x,y,x+1,y-2))
-        if 0<= x+1 < 8 and 0 <= y+2 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x+1,y+2))
-            if board[x+1][y+2] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7}:
-                if self.king_not_checked_after_move(x,y,x+1,y+2,board,maximizing_player):
-                    movelist.append((cmod*piecenmbr,x,y,x+1,y+2))
-        return movelist , threatlist
-    
-    def generate_move_threat_bishop(self,x,y,piecenmbr,maximizing_player, board):
+        if 0 <= x-2 < 8 and 0 <= y-1 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x-2, y-1))
+            if board[x-2][y-1] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7}:
+                if self.king_not_checked_after_move(x, y, x-2, y-1, board, maximizing_player):
+                    movelist.append((cmod*piecenmbr, x, y, x-2, y-1))
+        if 0 <= x-2 < 8 and 0 <= y+1 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x-2, y+1))
+            if board[x-2][y+1] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7}:
+                if self.king_not_checked_after_move(x, y, x-2, y+1, board, maximizing_player):
+                    movelist.append((cmod*piecenmbr, x, y, x-2, y+1))
+        if 0 <= x-1 < 8 and 0 <= y-2 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x-1, y-2))
+            if board[x-1][y-2] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7}:
+                if self.king_not_checked_after_move(x, y, x-1, y-2, board, maximizing_player):
+                    movelist.append((cmod*piecenmbr, x, y, x-1, y-2))
+        if 0 <= x-1 < 8 and 0 <= y+2 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x-1, y+2))
+            if board[x-1][y+2] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7}:
+                if self.king_not_checked_after_move(x, y, x-1, y+2, board, maximizing_player):
+                    movelist.append((cmod*piecenmbr, x, y, x-1, y+2))
+        if 0 <= x+2 < 8 and 0 <= y+1 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x+2, y+1))
+            if board[x+2][y+1] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7}:
+                if self.king_not_checked_after_move(x, y, x+2, y+1, board, maximizing_player):
+                    movelist.append((cmod*piecenmbr, x, y, x+2, y+1))
+        if 0 <= x+2 < 8 and 0 <= y-1 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x+2, y-1))
+            if board[x+2][y-1] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7}:
+                if self.king_not_checked_after_move(x, y, x+2, y-1, board, maximizing_player):
+                    movelist.append((cmod*piecenmbr, x, y, x+2, y-1))
+        if 0 <= x+1 < 8 and 0 <= y-2 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x+1, y-2))
+            if board[x+1][y-2] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7}:
+                if self.king_not_checked_after_move(x, y, x+1, y-2, board, maximizing_player):
+                    movelist.append((cmod*piecenmbr, x, y, x+1, y-2))
+        if 0 <= x+1 < 8 and 0 <= y+2 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x+1, y+2))
+            if board[x+1][y+2] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7}:
+                if self.king_not_checked_after_move(x, y, x+1, y+2, board, maximizing_player):
+                    movelist.append((cmod*piecenmbr, x, y, x+1, y+2))
+        return movelist, threatlist
+
+    def generate_move_threat_bishop(self, x, y, piecenmbr, maximizing_player, board):
         """Funktio, joka lisää lähetin uhkaamat ruudut ja mahdolliset liikkeet omille listoille, ja palauttaa ne.
 
             Args:
@@ -485,7 +503,7 @@ class Engine:
                 piecenmbr: nappula
                 maximizing_player: pelaaja, kenen nappula on käsittelyssä
                 board: lauta, jonka pohjalta listat tehdään
-            
+
             Returns:
                 palauttaa tuplena lähetin uhkaamat ruudut ja mahdolliset siirrot
         """
@@ -496,51 +514,51 @@ class Engine:
         cmod = -1
         if maximizing_player:
             cmod = 1
-        blocked_diagonals = [True,True,True,True]
-        for dz in range(1,n):
+        blocked_diagonals = [True, True, True, True]
+        for dz in range(1, n):
             if blocked_diagonals[0]:
-                if 0<= x+dz <8 and 0<= y+dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x+dz,y+dz))  
-                    if board[x+dz][y+dz] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*7}:
-                        if self.king_not_checked_after_move(x,y,x+dz,y+dz,board,maximizing_player):
-                            movelist.append((cmod*piecenmbr,x,y,x+dz,y+dz))  
-                            if board[x+dz][y+dz] in {-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+                if 0 <= x+dz < 8 and 0 <= y+dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x+dz, y+dz))
+                    if board[x+dz][y+dz] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*7}:
+                        if self.king_not_checked_after_move(x, y, x+dz, y+dz, board, maximizing_player):
+                            movelist.append((cmod*piecenmbr, x, y, x+dz, y+dz))
+                            if board[x+dz][y+dz] in {-cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                                 blocked_diagonals[0] = False
                     else:
                         blocked_diagonals[0] = False
                 else:
                     blocked_diagonals[0] = False
-            if blocked_diagonals[1]:        
-                if 0<= x+dz <8 and 0<= y-dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x+dz,y-dz))  
-                    if board[x+dz][y-dz] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*7}:
-                        if self.king_not_checked_after_move(x,y,x+dz,y-dz,board,maximizing_player):
-                            movelist.append((cmod*piecenmbr,x,y,x+dz,y-dz))
-                            if board[x+dz][y-dz] in {-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+            if blocked_diagonals[1]:
+                if 0 <= x+dz < 8 and 0 <= y-dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x+dz, y-dz))
+                    if board[x+dz][y-dz] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*7}:
+                        if self.king_not_checked_after_move(x, y, x+dz, y-dz, board, maximizing_player):
+                            movelist.append((cmod*piecenmbr, x, y, x+dz, y-dz))
+                            if board[x+dz][y-dz] in {-cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                                 blocked_diagonals[1] = False
                     else:
                         blocked_diagonals[1] = False
                 else:
                     blocked_diagonals[1] = False
-            if blocked_diagonals[2]:   
-                if 0<= x-dz <8 and 0<= y+dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x-dz,y+dz))  
-                    if board[x-dz][y+dz] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*7}:
-                        if self.king_not_checked_after_move(x,y,x-dz,y+dz,board,maximizing_player):
-                            movelist.append((cmod*piecenmbr,x,y,x-dz,y+dz)) 
-                            if board[x-dz][y+dz] in {-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+            if blocked_diagonals[2]:
+                if 0 <= x-dz < 8 and 0 <= y+dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x-dz, y+dz))
+                    if board[x-dz][y+dz] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*7}:
+                        if self.king_not_checked_after_move(x, y, x-dz, y+dz, board, maximizing_player):
+                            movelist.append((cmod*piecenmbr, x, y, x-dz, y+dz))
+                            if board[x-dz][y+dz] in {-cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                                 blocked_diagonals[2] = False
                     else:
                         blocked_diagonals[2] = False
                 else:
                     blocked_diagonals[2] = False
             if blocked_diagonals[3]:
-                if 0<= x-dz <8 and 0<= y-dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x-dz,y-dz))  
-                    if board[x-dz][y-dz] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*7}:
-                        if self.king_not_checked_after_move(x,y,x-dz,y-dz,board,maximizing_player):
-                            movelist.append((cmod*piecenmbr,x,y,x-dz,y-dz))
-                            if board[x-dz][y-dz] in {-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+                if 0 <= x-dz < 8 and 0 <= y-dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x-dz, y-dz))
+                    if board[x-dz][y-dz] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*7}:
+                        if self.king_not_checked_after_move(x, y, x-dz, y-dz, board, maximizing_player):
+                            movelist.append((cmod*piecenmbr, x, y, x-dz, y-dz))
+                            if board[x-dz][y-dz] in {-cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                                 blocked_diagonals[3] = False
                     else:
                         blocked_diagonals[3] = False
@@ -548,9 +566,9 @@ class Engine:
                     blocked_diagonals[3] = False
             if True not in blocked_diagonals:
                 break
-        return movelist,threatlist  
+        return movelist, threatlist
 
-    def generate_move_threat_rook(self,x,y,piecenmbr,maximizing_player, board): 
+    def generate_move_threat_rook(self, x, y, piecenmbr, maximizing_player, board):
         """Funktio, joka lisää tornin uhkaamat ruudut ja mahdolliset liikkeet omille listoille, ja palauttaa ne.
 
             Args:
@@ -559,7 +577,7 @@ class Engine:
                 piecenmbr: nappula
                 maximizing_player: pelaaja, kenen nappula on käsittelyssä
                 board: lauta, jonka pohjalta listat tehdään
-            
+
             Returns:
                 palauttaa tuplena tornin uhkaamat ruudut ja mahdolliset siirrot
         """
@@ -570,61 +588,61 @@ class Engine:
         cmod = -1
         if maximizing_player:
             cmod = 1
-        blocked_files = [True,True,True,True]
-        for dz in range(1,n):
+        blocked_files = [True, True, True, True]
+        for dz in range(1, n):
             if blocked_files[0]:
-                if 0<= x+dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x+dz,y))  
-                    if board[x+dz][y] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*7}:
-                        if self.king_not_checked_after_move(x,y,x+dz,y,board,maximizing_player):
-                            movelist.append((cmod*piecenmbr,x,y,x+dz,y))  
-                            if board[x+dz][y] in {-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+                if 0 <= x+dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x+dz, y))
+                    if board[x+dz][y] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*7}:
+                        if self.king_not_checked_after_move(x, y, x+dz, y, board, maximizing_player):
+                            movelist.append((cmod*piecenmbr, x, y, x+dz, y))
+                            if board[x+dz][y] in {-cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                                 blocked_files[0] = False
                     else:
                         blocked_files[0] = False
                 else:
                     blocked_files[0] = False
-            if blocked_files[1]:        
-                if 0<= x-dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x-dz,y))  
-                    if board[x-dz][y] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*7}:
-                        if self.king_not_checked_after_move(x,y,x-dz,y,board,maximizing_player):
-                            movelist.append((cmod*piecenmbr,x,y,x-dz,y))
-                            if board[x-dz][y] in {-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+            if blocked_files[1]:
+                if 0 <= x-dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x-dz, y))
+                    if board[x-dz][y] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*7}:
+                        if self.king_not_checked_after_move(x, y, x-dz, y, board, maximizing_player):
+                            movelist.append((cmod*piecenmbr, x, y, x-dz, y))
+                            if board[x-dz][y] in {-cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                                 blocked_files[1] = False
                     else:
                         blocked_files[1] = False
                 else:
                     blocked_files[1] = False
-            if blocked_files[2]:   
-                if 0<= y+dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x,y+dz))  
-                    if board[x][y+dz] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*7}:
-                        if self.king_not_checked_after_move(x,y,x,y+dz,board,maximizing_player):
-                            movelist.append((cmod*piecenmbr,x,y,x,y+dz)) 
-                            if board[x][y+dz] in {-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+            if blocked_files[2]:
+                if 0 <= y+dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x, y+dz))
+                    if board[x][y+dz] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*7}:
+                        if self.king_not_checked_after_move(x, y, x, y+dz, board, maximizing_player):
+                            movelist.append((cmod*piecenmbr, x, y, x, y+dz))
+                            if board[x][y+dz] in {-cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                                 blocked_files[2] = False
                     else:
                         blocked_files[2] = False
                 else:
                     blocked_files[2] = False
             if blocked_files[3]:
-                if 0<= y-dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x,y-dz))  
-                    if board[x][y-dz] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*7}:
-                        if self.king_not_checked_after_move(x,y,x,y-dz,board,maximizing_player):
-                            movelist.append((cmod*piecenmbr,x,y,x,y-dz))
-                            if board[x][y-dz] in {-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+                if 0 <= y-dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x, y-dz))
+                    if board[x][y-dz] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*7}:
+                        if self.king_not_checked_after_move(x, y, x, y-dz, board, maximizing_player):
+                            movelist.append((cmod*piecenmbr, x, y, x, y-dz))
+                            if board[x][y-dz] in {-cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                                 blocked_files[3] = False
                     else:
                         blocked_files[3] = False
                 else:
                     blocked_files[3] = False
             if True not in blocked_files:
-                break    
-        return movelist , threatlist
-    
-    def generate_move_threat_queen(self,x,y,piecenmbr,maximizing_player, board):
+                break
+        return movelist, threatlist
+
+    def generate_move_threat_queen(self, x, y, piecenmbr, maximizing_player, board):
         """Funktio, joka lisää kuningattaren uhkaamat ruudut ja mahdolliset liikkeet omille listoille, ja palauttaa ne.
 
             Args:
@@ -633,7 +651,7 @@ class Engine:
                 piecenmbr: nappula
                 maximizing_player: pelaaja, kenen nappula on käsittelyssä
                 board: lauta, jonka pohjalta listat tehdään
-            
+
             Returns:
                 palauttaa tuplena kuningattaren uhkaamat ruudut ja mahdolliset siirrot
         """
@@ -644,100 +662,100 @@ class Engine:
         cmod = -1
         if maximizing_player:
             cmod = 1
-        blocked_diagonals = [True,True,True,True]
-        blocked_files = [True,True,True,True]
-        for dz in range(1,n):
+        blocked_diagonals = [True, True, True, True]
+        blocked_files = [True, True, True, True]
+        for dz in range(1, n):
             if blocked_files[0]:
-                if 0<= x+dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x+dz,y))  
-                    if board[x+dz][y] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*7}:
-                        if self.king_not_checked_after_move(x,y,x+dz,y,board,maximizing_player):
-                            movelist.append((cmod*piecenmbr,x,y,x+dz,y))  
-                            if board[x+dz][y] in {-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+                if 0 <= x+dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x+dz, y))
+                    if board[x+dz][y] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*7}:
+                        if self.king_not_checked_after_move(x, y, x+dz, y, board, maximizing_player):
+                            movelist.append((cmod*piecenmbr, x, y, x+dz, y))
+                            if board[x+dz][y] in {-cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                                 blocked_files[0] = False
                     else:
                         blocked_files[0] = False
                 else:
                     blocked_files[0] = False
-            if blocked_files[1]:        
-                if 0<= x-dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x-dz,y))  
-                    if board[x-dz][y] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*7}:
-                        if self.king_not_checked_after_move(x,y,x-dz,y,board,maximizing_player):
-                            movelist.append((cmod*piecenmbr,x,y,x-dz,y))
-                            if board[x-dz][y] in {-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+            if blocked_files[1]:
+                if 0 <= x-dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x-dz, y))
+                    if board[x-dz][y] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*7}:
+                        if self.king_not_checked_after_move(x, y, x-dz, y, board, maximizing_player):
+                            movelist.append((cmod*piecenmbr, x, y, x-dz, y))
+                            if board[x-dz][y] in {-cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                                 blocked_files[1] = False
                     else:
                         blocked_files[1] = False
                 else:
                     blocked_files[1] = False
-            if blocked_files[2]:   
-                if 0<= y+dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x,y+dz))  
-                    if board[x][y+dz] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*7}:
-                        if self.king_not_checked_after_move(x,y,x,y+dz,board,maximizing_player):
-                            movelist.append((cmod*piecenmbr,x,y,x,y+dz))
-                            if board[x][y+dz] in {-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+            if blocked_files[2]:
+                if 0 <= y+dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x, y+dz))
+                    if board[x][y+dz] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*7}:
+                        if self.king_not_checked_after_move(x, y, x, y+dz, board, maximizing_player):
+                            movelist.append((cmod*piecenmbr, x, y, x, y+dz))
+                            if board[x][y+dz] in {-cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                                 blocked_files[2] = False
                     else:
                         blocked_files[2] = False
                 else:
                     blocked_files[2] = False
             if blocked_files[3]:
-                if 0<= y-dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x,y-dz))  
-                    if board[x][y-dz] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*7}:
-                        if self.king_not_checked_after_move(x,y,x,y-dz,board,maximizing_player):
-                            movelist.append((cmod*piecenmbr,x,y,x,y-dz))
-                            if board[x][y-dz] in {-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+                if 0 <= y-dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x, y-dz))
+                    if board[x][y-dz] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*7}:
+                        if self.king_not_checked_after_move(x, y, x, y-dz, board, maximizing_player):
+                            movelist.append((cmod*piecenmbr, x, y, x, y-dz))
+                            if board[x][y-dz] in {-cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                                 blocked_files[3] = False
                     else:
                         blocked_files[3] = False
                 else:
                     blocked_files[3] = False
             if blocked_diagonals[0]:
-                if 0<= x+dz <8 and 0<= y+dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x+dz,y+dz))  
-                    if board[x+dz][y+dz] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*7}:
-                        if self.king_not_checked_after_move(x,y,x+dz,y+dz,board,maximizing_player):
-                            movelist.append((cmod*piecenmbr,x,y,x+dz,y+dz))  
-                            if board[x+dz][y+dz] in {-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+                if 0 <= x+dz < 8 and 0 <= y+dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x+dz, y+dz))
+                    if board[x+dz][y+dz] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*7}:
+                        if self.king_not_checked_after_move(x, y, x+dz, y+dz, board, maximizing_player):
+                            movelist.append((cmod*piecenmbr, x, y, x+dz, y+dz))
+                            if board[x+dz][y+dz] in {-cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                                 blocked_diagonals[0] = False
                     else:
                         blocked_diagonals[0] = False
                 else:
                     blocked_diagonals[0] = False
-            if blocked_diagonals[1]:        
-                if 0<= x+dz <8 and 0<= y-dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x+dz,y-dz))  
-                    if board[x+dz][y-dz] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*7}:
-                        if self.king_not_checked_after_move(x,y,x+dz,y-dz,board,maximizing_player):
-                            movelist.append((cmod*piecenmbr,x,y,x+dz,y-dz))
-                            if board[x+dz][y-dz] in {-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+            if blocked_diagonals[1]:
+                if 0 <= x+dz < 8 and 0 <= y-dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x+dz, y-dz))
+                    if board[x+dz][y-dz] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*7}:
+                        if self.king_not_checked_after_move(x, y, x+dz, y-dz, board, maximizing_player):
+                            movelist.append((cmod*piecenmbr, x, y, x+dz, y-dz))
+                            if board[x+dz][y-dz] in {-cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                                 blocked_diagonals[1] = False
                     else:
                         blocked_diagonals[1] = False
                 else:
                     blocked_diagonals[1] = False
-            if blocked_diagonals[2]:   
-                if 0<= x-dz <8 and 0<= y+dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x-dz,y+dz))  
-                    if board[x-dz][y+dz] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*7}:
-                        if self.king_not_checked_after_move(x,y,x-dz,y+dz,board,maximizing_player):
-                            movelist.append((cmod*piecenmbr,x,y,x-dz,y+dz)) 
-                            if board[x-dz][y+dz] in {-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+            if blocked_diagonals[2]:
+                if 0 <= x-dz < 8 and 0 <= y+dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x-dz, y+dz))
+                    if board[x-dz][y+dz] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*7}:
+                        if self.king_not_checked_after_move(x, y, x-dz, y+dz, board, maximizing_player):
+                            movelist.append((cmod*piecenmbr, x, y, x-dz, y+dz))
+                            if board[x-dz][y+dz] in {-cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                                 blocked_diagonals[2] = False
                     else:
                         blocked_diagonals[2] = False
                 else:
                     blocked_diagonals[2] = False
             if blocked_diagonals[3]:
-                if 0<= x-dz <8 and 0<= y-dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x-dz,y-dz))  
-                    if board[x-dz][y-dz] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*7}:
-                        if self.king_not_checked_after_move(x,y,x-dz,y-dz,board,maximizing_player):
-                            movelist.append((cmod*piecenmbr,x,y,x-dz,y-dz))
-                            if board[x-dz][y-dz] in {-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+                if 0 <= x-dz < 8 and 0 <= y-dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x-dz, y-dz))
+                    if board[x-dz][y-dz] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*7}:
+                        if self.king_not_checked_after_move(x, y, x-dz, y-dz, board, maximizing_player):
+                            movelist.append((cmod*piecenmbr, x, y, x-dz, y-dz))
+                            if board[x-dz][y-dz] in {-cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                                 blocked_diagonals[3] = False
                     else:
                         blocked_diagonals[3] = False
@@ -747,12 +765,12 @@ class Engine:
                 break
         return movelist, threatlist
 
-    def generate_threatlists(self,board):
+    def generate_threatlists(self, board):
         """Funktio, joka lisää kaikki kummankin pelaajan uhkaamat ruudut listalle, ja palauttaa listat.
 
             Args:
                 board: lauta, jonka pohjalta listat tehdään
-            
+
             Returns:
                 palauttaa tuplena molempien pelaajien uhkaamat ruudut
         """
@@ -763,13 +781,15 @@ class Engine:
             for j in range(8):
                 piece = board[i][j]
                 if piece > 0:
-                    threatlist_white.extend(self.generate_threat_all(i,j,abs(piece),True,board))
+                    threatlist_white.extend(self.generate_threat_all(
+                        i, j, abs(piece), True, board))
                 elif piece < 0:
-                    threatlist_black.extend(self.generate_threat_all(i,j,abs(piece),False,board))
-        
+                    threatlist_black.extend(self.generate_threat_all(
+                        i, j, abs(piece), False, board))
+
         return threatlist_white, threatlist_black
-    
-    def generate_threat_all(self,x,y, piecenmbr, maximizing_player,board):
+
+    def generate_threat_all(self, x, y, piecenmbr, maximizing_player, board):
         """Funktio, joka lisää nappulan uhkaamat ruudut listalle, ja palauttaa listan.
 
             Args:
@@ -778,28 +798,34 @@ class Engine:
                 piecenmbr: nappula
                 maximizing_player: pelaaja, kenen nappula on käsittelyssä
                 board: lauta, jonka pohjalta listat tehdään
-            
+
             Returns:
                 palauttaa listana nappulan uhkaamat ruudut
         """
 
         threatlist = []
         if piecenmbr == 1:
-            threatlist.extend(self.generate_threat_pawn(x,y,piecenmbr,maximizing_player,board))
+            threatlist.extend(self.generate_threat_pawn(
+                x, y, piecenmbr, maximizing_player, board))
         elif piecenmbr == 3:
-            threatlist.extend(self.generate_threat_knight(x,y,piecenmbr,maximizing_player,board))
+            threatlist.extend(self.generate_threat_knight(
+                x, y, piecenmbr, maximizing_player, board))
         elif piecenmbr == 4:
-            threatlist.extend(self.generate_threat_bishop(x,y,piecenmbr,maximizing_player,board))
+            threatlist.extend(self.generate_threat_bishop(
+                x, y, piecenmbr, maximizing_player, board))
         elif piecenmbr == 5:
-           threatlist.extend(self.generate_threat_rook(x,y,piecenmbr,maximizing_player,board))
+            threatlist.extend(self.generate_threat_rook(
+                x, y, piecenmbr, maximizing_player, board))
         elif piecenmbr == 6:
-            threatlist.extend(self.generate_threat_queen(x,y,piecenmbr,maximizing_player,board))
+            threatlist.extend(self.generate_threat_queen(
+                x, y, piecenmbr, maximizing_player, board))
         elif piecenmbr == 7:
-            threatlist.extend(self.generate_threat_king(x,y,piecenmbr,maximizing_player,board))
+            threatlist.extend(self.generate_threat_king(
+                x, y, piecenmbr, maximizing_player, board))
 
-        return threatlist    
+        return threatlist
 
-    def generate_threat_pawn(self,x,y,piecenmbr, maximizing_player,board):  
+    def generate_threat_pawn(self, x, y, piecenmbr, maximizing_player, board):
         """Funktio, joka lisää moukan uhkaamat ruudut listalle, ja palauttaa listan.
 
             Args:
@@ -808,7 +834,7 @@ class Engine:
                 piecenmbr: nappula
                 maximizing_player: pelaaja, kenen nappula on käsittelyssä
                 board: lauta, jonka pohjalta listat tehdään
-            
+
             Returns:
                 palauttaa listana moukan uhkaamat ruudut
         """
@@ -818,23 +844,23 @@ class Engine:
         if maximizing_player:
             cmod = 1
 
-            if 0<= x-1 < 8:
-                if 0 <= y-1 <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x-1,y-1))
-                if 0 <= y+1 <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x-1,y+1))
-        else:       
+            if 0 <= x-1 < 8:
+                if 0 <= y-1 < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x-1, y-1))
+                if 0 <= y+1 < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x-1, y+1))
+        else:
             cmod = -1
 
-            if 0<= x+1 < 8:
-                if 0 <= y-1 <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x+1,y-1))
-                if 0 <= y+1 <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x+1,y+1))
+            if 0 <= x+1 < 8:
+                if 0 <= y-1 < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x+1, y-1))
+                if 0 <= y+1 < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x+1, y+1))
 
         return threatlist
-    
-    def generate_threat_knight(self,x,y,piecenmbr, maximizing_player,board):  
+
+    def generate_threat_knight(self, x, y, piecenmbr, maximizing_player, board):
         """Funktio, joka lisää ratsun uhkaamat ruudut listalle, ja palauttaa listan.
 
             Args:
@@ -843,7 +869,7 @@ class Engine:
                 piecenmbr: nappula
                 maximizing_player: pelaaja, kenen nappula on käsittelyssä
                 board: lauta, jonka pohjalta listat tehdään
-            
+
             Returns:
                 palauttaa listana ratsun uhkaamat ruudut
         """
@@ -852,26 +878,26 @@ class Engine:
         cmod = -1
         if maximizing_player:
             cmod = 1
-        if 0<= x-2 < 8 and 0 <= y-1 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x-2,y-1))
-        if 0<= x-2 < 8 and 0 <= y+1 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x-2,y+1))
-        if 0<= x-1 < 8 and 0 <= y-2 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x-1,y-2))
-        if 0<= x-1 < 8 and 0 <= y+2 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x-1,y+2))
-        if 0<= x+2 < 8 and 0 <= y+1 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x+2,y+1))
-        if 0<= x+2 < 8 and 0 <= y-1 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x+2,y-1))
-        if 0<= x+1 < 8 and 0 <= y-2 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x+1,y-2))
-        if 0<= x+1 < 8 and 0 <= y+2 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x+1,y+2))
+        if 0 <= x-2 < 8 and 0 <= y-1 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x-2, y-1))
+        if 0 <= x-2 < 8 and 0 <= y+1 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x-2, y+1))
+        if 0 <= x-1 < 8 and 0 <= y-2 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x-1, y-2))
+        if 0 <= x-1 < 8 and 0 <= y+2 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x-1, y+2))
+        if 0 <= x+2 < 8 and 0 <= y+1 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x+2, y+1))
+        if 0 <= x+2 < 8 and 0 <= y-1 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x+2, y-1))
+        if 0 <= x+1 < 8 and 0 <= y-2 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x+1, y-2))
+        if 0 <= x+1 < 8 and 0 <= y+2 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x+1, y+2))
 
         return threatlist
-    
-    def generate_threat_bishop(self,x,y,piecenmbr,maximizing_player, board):
+
+    def generate_threat_bishop(self, x, y, piecenmbr, maximizing_player, board):
         """Funktio, joka lisää lähetin uhkaamat ruudut listalle, ja palauttaa listan.
 
             Args:
@@ -880,7 +906,7 @@ class Engine:
                 piecenmbr: nappula
                 maximizing_player: pelaaja, kenen nappula on käsittelyssä
                 board: lauta, jonka pohjalta listat tehdään
-            
+
             Returns:
                 palauttaa listana lähetin uhkaamat ruudut
         """
@@ -890,41 +916,41 @@ class Engine:
         cmod = -1
         if maximizing_player:
             cmod = 1
-        blocked_diagonals = [True,True,True,True]
-        for dz in range(1,n):
+        blocked_diagonals = [True, True, True, True]
+        for dz in range(1, n):
             if blocked_diagonals[0]:
-                if 0<= x+dz <8 and 0<= y+dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x+dz,y+dz))  
-                    if board[x+dz][y+dz] in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+                if 0 <= x+dz < 8 and 0 <= y+dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x+dz, y+dz))
+                    if board[x+dz][y+dz] in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                         blocked_diagonals[0] = False
                 else:
                     blocked_diagonals[0] = False
-            if blocked_diagonals[1]:        
-                if 0<= x+dz <8 and 0<= y-dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x+dz,y-dz))  
-                    if board[x+dz][y-dz] in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+            if blocked_diagonals[1]:
+                if 0 <= x+dz < 8 and 0 <= y-dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x+dz, y-dz))
+                    if board[x+dz][y-dz] in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                         blocked_diagonals[1] = False
                 else:
                     blocked_diagonals[1] = False
-            if blocked_diagonals[2]:   
-                if 0<= x-dz <8 and 0<= y+dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x-dz,y+dz))  
-                    if board[x-dz][y+dz] in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+            if blocked_diagonals[2]:
+                if 0 <= x-dz < 8 and 0 <= y+dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x-dz, y+dz))
+                    if board[x-dz][y+dz] in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                         blocked_diagonals[2] = False
                 else:
                     blocked_diagonals[2] = False
             if blocked_diagonals[3]:
-                if 0<= x-dz <8 and 0<= y-dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x-dz,y-dz))  
-                    if board[x-dz][y-dz] in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+                if 0 <= x-dz < 8 and 0 <= y-dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x-dz, y-dz))
+                    if board[x-dz][y-dz] in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                         blocked_diagonals[3] = False
                 else:
                     blocked_diagonals[3] = False
             if True not in blocked_diagonals:
                 break
-        return threatlist  
+        return threatlist
 
-    def generate_threat_rook(self,x,y,piecenmbr,maximizing_player, board): 
+    def generate_threat_rook(self, x, y, piecenmbr, maximizing_player, board):
         """Funktio, joka lisää tornin uhkaamat ruudut listalle, ja palauttaa listan.
 
             Args:
@@ -933,7 +959,7 @@ class Engine:
                 piecenmbr: nappula
                 maximizing_player: pelaaja, kenen nappula on käsittelyssä
                 board: lauta, jonka pohjalta listat tehdään
-            
+
             Returns:
                 palauttaa listana tornin uhkaamat ruudut
         """
@@ -943,41 +969,41 @@ class Engine:
         cmod = -1
         if maximizing_player:
             cmod = 1
-        blocked_files = [True,True,True,True]
-        for dz in range(1,n):
+        blocked_files = [True, True, True, True]
+        for dz in range(1, n):
             if blocked_files[0]:
-                if 0<= x+dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x+dz,y))  
-                    if board[x+dz][y] in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+                if 0 <= x+dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x+dz, y))
+                    if board[x+dz][y] in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                         blocked_files[0] = False
                 else:
                     blocked_files[0] = False
-            if blocked_files[1]:        
-                if 0<= x-dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x-dz,y))  
-                    if board[x-dz][y] in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+            if blocked_files[1]:
+                if 0 <= x-dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x-dz, y))
+                    if board[x-dz][y] in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                         blocked_files[1] = False
                 else:
                     blocked_files[1] = False
-            if blocked_files[2]:   
-                if 0<= y+dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x,y+dz))  
-                    if board[x][y+dz] in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+            if blocked_files[2]:
+                if 0 <= y+dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x, y+dz))
+                    if board[x][y+dz] in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                         blocked_files[2] = False
                 else:
                     blocked_files[2] = False
             if blocked_files[3]:
-                if 0<= y-dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x,y-dz))  
-                    if board[x][y-dz] in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+                if 0 <= y-dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x, y-dz))
+                    if board[x][y-dz] in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                         blocked_files[3] = False
                 else:
                     blocked_files[3] = False
             if True not in blocked_files:
-                break    
+                break
         return threatlist
-    
-    def generate_threat_queen(self,x,y,piecenmbr,maximizing_player, board):
+
+    def generate_threat_queen(self, x, y, piecenmbr, maximizing_player, board):
         """Funktio, joka lisää kuningattaren uhkaamat ruudut listalle, ja palauttaa listan.
 
             Args:
@@ -986,7 +1012,7 @@ class Engine:
                 piecenmbr: nappula
                 maximizing_player: pelaaja, kenen nappula on käsittelyssä
                 board: lauta, jonka pohjalta listat tehdään
-            
+
             Returns:
                 palauttaa listana kuningattaren uhkaamat ruudut
         """
@@ -996,70 +1022,70 @@ class Engine:
         cmod = -1
         if maximizing_player:
             cmod = 1
-        blocked_diagonals = [True,True,True,True]
-        blocked_files = [True,True,True,True]
-        for dz in range(1,n):
+        blocked_diagonals = [True, True, True, True]
+        blocked_files = [True, True, True, True]
+        for dz in range(1, n):
             if blocked_files[0]:
-                if 0<= x+dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x+dz,y))  
-                    if board[x+dz][y] in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+                if 0 <= x+dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x+dz, y))
+                    if board[x+dz][y] in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                         blocked_files[0] = False
                 else:
                     blocked_files[0] = False
-            if blocked_files[1]:        
-                if 0<= x-dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x-dz,y))  
-                    if board[x-dz][y] in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+            if blocked_files[1]:
+                if 0 <= x-dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x-dz, y))
+                    if board[x-dz][y] in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                         blocked_files[1] = False
                 else:
                     blocked_files[1] = False
-            if blocked_files[2]:   
-                if 0<= y+dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x,y+dz))  
-                    if board[x][y+dz] in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+            if blocked_files[2]:
+                if 0 <= y+dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x, y+dz))
+                    if board[x][y+dz] in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                         blocked_files[2] = False
                 else:
                     blocked_files[2] = False
             if blocked_files[3]:
-                if 0<= y-dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x,y-dz))  
-                    if board[x][y-dz] in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+                if 0 <= y-dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x, y-dz))
+                    if board[x][y-dz] in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                         blocked_files[3] = False
                 else:
                     blocked_files[3] = False
             if blocked_diagonals[0]:
-                if 0<= x+dz <8 and 0<= y+dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x+dz,y+dz))  
-                    if board[x+dz][y+dz] in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+                if 0 <= x+dz < 8 and 0 <= y+dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x+dz, y+dz))
+                    if board[x+dz][y+dz] in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                         blocked_diagonals[0] = False
                 else:
                     blocked_diagonals[0] = False
-            if blocked_diagonals[1]:        
-                if 0<= x+dz <8 and 0<= y-dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x+dz,y-dz))  
-                    if board[x+dz][y-dz] in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+            if blocked_diagonals[1]:
+                if 0 <= x+dz < 8 and 0 <= y-dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x+dz, y-dz))
+                    if board[x+dz][y-dz] in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                         blocked_diagonals[1] = False
                 else:
                     blocked_diagonals[1] = False
-            if blocked_diagonals[2]:   
-                if 0<= x-dz <8 and 0<= y+dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x-dz,y+dz))  
-                    if board[x-dz][y+dz] in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+            if blocked_diagonals[2]:
+                if 0 <= x-dz < 8 and 0 <= y+dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x-dz, y+dz))
+                    if board[x-dz][y+dz] in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                         blocked_diagonals[2] = False
                 else:
                     blocked_diagonals[2] = False
             if blocked_diagonals[3]:
-                if 0<= x-dz <8 and 0<= y-dz <8:
-                    threatlist.append((cmod*piecenmbr,x,y,x-dz,y-dz))  
-                    if board[x-dz][y-dz] in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7,-cmod*1,-cmod*3,-cmod*4,-cmod*5,-cmod*6}:
+                if 0 <= x-dz < 8 and 0 <= y-dz < 8:
+                    threatlist.append((cmod*piecenmbr, x, y, x-dz, y-dz))
+                    if board[x-dz][y-dz] in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7, -cmod*1, -cmod*3, -cmod*4, -cmod*5, -cmod*6}:
                         blocked_diagonals[3] = False
                 else:
                     blocked_diagonals[3] = False
             if True not in blocked_diagonals and True not in blocked_files:
                 break
         return threatlist
-    
-    def generate_threat_king(self,x,y,piecenmbr,maximizing_player,board):
+
+    def generate_threat_king(self, x, y, piecenmbr, maximizing_player, board):
         """Funktio, joka lisää kuninkaan uhkaamat ruudut listalle, ja palauttaa listan.
 
             Args:
@@ -1068,7 +1094,7 @@ class Engine:
                 piecenmbr: nappula
                 maximizing_player: pelaaja, kenen nappula on käsittelyssä
                 board: lauta, jonka pohjalta listat tehdään
-            
+
             Returns:
                 palauttaa listana kuninkaan uhkaamat ruudut
         """
@@ -1077,26 +1103,26 @@ class Engine:
         cmod = -1
         if maximizing_player:
             cmod = 1
-        if 0<= x+1 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x+1,y))
-        if 0<= x+1 <8 and 0<= y-1 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x+1,y-1))
-        if 0<= x+1 <8 and 0<= y+1 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x+1,y+1))
-        if 0<= y+1 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x,y+1))
-        if 0<= y-1 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x,y-1))
-        if 0<= x-1 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x-1,y))
-        if 0<= x-1 <8 and 0<= y-1 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x-1,y-1))
-        if 0<= x-1 <8 and 0<= y+1 <8:
-            threatlist.append((cmod*piecenmbr,x,y,x-1,y+1))
+        if 0 <= x+1 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x+1, y))
+        if 0 <= x+1 < 8 and 0 <= y-1 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x+1, y-1))
+        if 0 <= x+1 < 8 and 0 <= y+1 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x+1, y+1))
+        if 0 <= y+1 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x, y+1))
+        if 0 <= y-1 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x, y-1))
+        if 0 <= x-1 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x-1, y))
+        if 0 <= x-1 < 8 and 0 <= y-1 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x-1, y-1))
+        if 0 <= x-1 < 8 and 0 <= y+1 < 8:
+            threatlist.append((cmod*piecenmbr, x, y, x-1, y+1))
 
-        return threatlist    
+        return threatlist
 
-    def generate_move_king(self,x,y,piecenmbr,maximizing_player, board):
+    def generate_move_king(self, x, y, piecenmbr, maximizing_player, board):
         """Funktio, joka lisää kuninkaan mahdolliset siirrot listalle, ja palauttaa listan.
 
             Args:
@@ -1105,7 +1131,7 @@ class Engine:
                 piecenmbr: nappula
                 maximizing_player: pelaaja, kenen nappula on käsittelyssä
                 board: lauta, jonka pohjalta listat tehdään
-            
+
             Returns:
                 palauttaa listana kuninkaan siirrot
         """
@@ -1114,41 +1140,41 @@ class Engine:
         cmod = -1
         if maximizing_player:
             cmod = 1
-        if 0<= x+1 <8:
-            if board[x+1][y] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7}:
-                if self.king_not_checked_after_move(x,y,x+1,y,board,maximizing_player):
-                    movelist.append((cmod*piecenmbr,x,y,x+1,y))
-        if 0<= x+1 <8 and 0<= y-1 <8:
-            if board[x+1][y-1] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7}:
-                if self.king_not_checked_after_move(x,y,x+1,y-1,board,maximizing_player):
-                    movelist.append((cmod*piecenmbr,x,y,x+1,y-1))
-        if 0<= x+1 <8 and 0<= y+1 <8:
-            if board[x+1][y+1] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7}:
-                if self.king_not_checked_after_move(x,y,x+1,y+1,board,maximizing_player):
-                    movelist.append((cmod*piecenmbr,x,y,x+1,y+1))
-        if 0<= y+1 <8:
-            if board[x][y+1] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7}:
-                if self.king_not_checked_after_move(x,y,x,y+1,board,maximizing_player):
-                    movelist.append((cmod*piecenmbr,x,y,x,y+1))
-        if 0<= y-1 <8:
-            if board[x][y-1] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7}:
-                if self.king_not_checked_after_move(x,y,x,y-1,board,maximizing_player):
-                    movelist.append((cmod*piecenmbr,x,y,x,y-1))
-        if 0<= x-1 <8:
-            if board[x-1][y] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7}:
-                if self.king_not_checked_after_move(x,y,x-1,y,board,maximizing_player):
-                    movelist.append((cmod*piecenmbr,x,y,x-1,y))
-        if 0<= x-1 <8 and 0<= y-1 <8:
-            if board[x-1][y-1] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7}:
-                if self.king_not_checked_after_move(x,y,x-1,y-1,board,maximizing_player):
-                    movelist.append((cmod*piecenmbr,x,y,x-1,y-1))
-        if 0<= x-1 <8 and 0<= y+1 <8:
-            if board[x-1][y+1] not in {cmod*1,cmod*3,cmod*4,cmod*5,cmod*6,cmod*7}:
-                if self.king_not_checked_after_move(x,y,x-1,y+1,board,maximizing_player):
-                    movelist.append((cmod*piecenmbr,x,y,x-1,y+1))
-        return movelist 
+        if 0 <= x+1 < 8:
+            if board[x+1][y] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7}:
+                if self.king_not_checked_after_move(x, y, x+1, y, board, maximizing_player):
+                    movelist.append((cmod*piecenmbr, x, y, x+1, y))
+        if 0 <= x+1 < 8 and 0 <= y-1 < 8:
+            if board[x+1][y-1] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7}:
+                if self.king_not_checked_after_move(x, y, x+1, y-1, board, maximizing_player):
+                    movelist.append((cmod*piecenmbr, x, y, x+1, y-1))
+        if 0 <= x+1 < 8 and 0 <= y+1 < 8:
+            if board[x+1][y+1] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7}:
+                if self.king_not_checked_after_move(x, y, x+1, y+1, board, maximizing_player):
+                    movelist.append((cmod*piecenmbr, x, y, x+1, y+1))
+        if 0 <= y+1 < 8:
+            if board[x][y+1] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7}:
+                if self.king_not_checked_after_move(x, y, x, y+1, board, maximizing_player):
+                    movelist.append((cmod*piecenmbr, x, y, x, y+1))
+        if 0 <= y-1 < 8:
+            if board[x][y-1] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7}:
+                if self.king_not_checked_after_move(x, y, x, y-1, board, maximizing_player):
+                    movelist.append((cmod*piecenmbr, x, y, x, y-1))
+        if 0 <= x-1 < 8:
+            if board[x-1][y] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7}:
+                if self.king_not_checked_after_move(x, y, x-1, y, board, maximizing_player):
+                    movelist.append((cmod*piecenmbr, x, y, x-1, y))
+        if 0 <= x-1 < 8 and 0 <= y-1 < 8:
+            if board[x-1][y-1] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7}:
+                if self.king_not_checked_after_move(x, y, x-1, y-1, board, maximizing_player):
+                    movelist.append((cmod*piecenmbr, x, y, x-1, y-1))
+        if 0 <= x-1 < 8 and 0 <= y+1 < 8:
+            if board[x-1][y+1] not in {cmod*1, cmod*3, cmod*4, cmod*5, cmod*6, cmod*7}:
+                if self.king_not_checked_after_move(x, y, x-1, y+1, board, maximizing_player):
+                    movelist.append((cmod*piecenmbr, x, y, x-1, y+1))
+        return movelist
 
-    def square_threatened(self,x,y,maximizing_player, threatlist_white, threatlist_black):
+    def square_threatened(self, x, y, maximizing_player, threatlist_white, threatlist_black):
         """Funktio, joka lisää nappulan uhkaamat ruudut listalle, ja palauttaa listan.
 
             Args:
@@ -1157,7 +1183,7 @@ class Engine:
                 maximizing_player: pelaaja, jolle tutkitaan vastustajan uhkia
                 threatlist_white: valkean uhkaamat ruudut
                 threatlist_black: mustan uhkaamat ruudut
-            
+
             Returns:
                 True: jos ruutu koordinaateilla (x,y) on vastustajan uhkaama
                 False: muuten
@@ -1174,7 +1200,7 @@ class Engine:
                     return True
             return False
 
-    def manage_board(self,x,y,dx,dy,board):
+    def manage_board(self, x, y, dx, dy, board):
         """Funktio, joka muuttaa pelilaudan ja tarvittavat tukevat listat siirron jälkeiseen tilanteeseen.
 
             Args:
@@ -1186,12 +1212,13 @@ class Engine:
         """
 
         piece = board[x][y]
-        self.piece_positions_all.remove((piece,x,y))
+        self.piece_positions_all.remove((piece, x, y))
         try:
-            self.piece_positions_all.remove((board[dx][dy],dx,dy))
+            self.piece_positions_all.remove((board[dx][dy], dx, dy))
         except:
             if board[dx][dy] != 0:
-                print("board[dx][dy]",board[dx][dy],piece,self.piece_positions_all)
+                print("board[dx][dy]", board[dx][dy],
+                      piece, self.piece_positions_all)
         if piece == 1:
             if dx == 0:
                 board[dx][dy] = 6
@@ -1204,16 +1231,16 @@ class Engine:
                 board[dx][dy] = piece
         else:
             if piece == 7:
-                self.white_king_pos = (dx,dy)
+                self.white_king_pos = (dx, dy)
             elif piece == -7:
-                self.black_king_pos = (dx,dy)
+                self.black_king_pos = (dx, dy)
             board[dx][dy] = piece
 
-        self.piece_positions_all.append((board[dx][dy],dx,dy))
+        self.piece_positions_all.append((board[dx][dy], dx, dy))
 
         board[x][y] = 0
-    
-    def revert_board(self,x,y,dx,dy,target_sqr, piece ,board):
+
+    def revert_board(self, x, y, dx, dy, target_sqr, piece, board):
         """Funktio, joka muuttaa pelilaudan ja tarvittavat tukevat listat takaisin siirtoa edeltävään tilanteeseen.
 
             Args:
@@ -1226,18 +1253,18 @@ class Engine:
                 board: lauta
         """
 
-        self.piece_positions_all.remove((board[dx][dy],dx,dy))
-        self.piece_positions_all.append((piece,x,y))
+        self.piece_positions_all.remove((board[dx][dy], dx, dy))
+        self.piece_positions_all.append((piece, x, y))
         if target_sqr != 0:
-            self.piece_positions_all.append((target_sqr,dx,dy))
+            self.piece_positions_all.append((target_sqr, dx, dy))
         board[x][y] = piece
-        board[dx][dy] = target_sqr 
+        board[dx][dy] = target_sqr
         if piece == 7:
-            self.white_king_pos = (x,y)
+            self.white_king_pos = (x, y)
         elif piece == -7:
-            self.black_king_pos = (x,y)
-    
-    def king_not_checked_after_move(self,x,y,dx,dy,board, maximizing_player):
+            self.black_king_pos = (x, y)
+
+    def king_not_checked_after_move(self, x, y, dx, dy, board, maximizing_player):
         """Funktio, joka tarkistaa, onko oma kuningas uhattuna siirron jälkeen.
 
             Args:
@@ -1247,7 +1274,7 @@ class Engine:
                 dy: napppulan y-koordinaatti siirron jälkeen
                 board: lauta
                 maximizing_player: liikkuva pelajaa
-            
+
             Returns:
                 False: jos oman kuninkaan ruutu on uhattuna siirron jälkeen:
                 True: muuten
@@ -1256,24 +1283,23 @@ class Engine:
         piece = board[x][y]
         target_sqr = board[dx][dy]
 
-        self.manage_board(x,y,dx,dy,board)
+        self.manage_board(x, y, dx, dy, board)
 
         king_position = self.black_king_pos
 
         if maximizing_player:
             king_position = self.white_king_pos
 
-        threat_tuple = self.generate_threatlists(board)        
+        threat_tuple = self.generate_threatlists(board)
 
-        if self.square_threatened(king_position[0],king_position[1],maximizing_player,threat_tuple[0],threat_tuple[1]):
-            self.revert_board(x,y,dx,dy,target_sqr,piece,board)
+        if self.square_threatened(king_position[0], king_position[1], maximizing_player, threat_tuple[0], threat_tuple[1]):
+            self.revert_board(x, y, dx, dy, target_sqr, piece, board)
             return False
 
-        self.revert_board(x,y,dx,dy,target_sqr,piece,board)
+        self.revert_board(x, y, dx, dy, target_sqr, piece, board)
         return True
-    
 
-    def manage_list_states(self,piecenmbr, x,y,dx,dy,maximizing_player,board,copymovewhite, copymoveblack, copythreatwhite, copythreatblack):  
+    def manage_list_states(self, piecenmbr, x, y, dx, dy, maximizing_player, board, copymovewhite, copymoveblack, copythreatwhite, copythreatblack):
         """Funktio, joka muuttaa siirron arviointeihin tarvittavia tukevia listoja.
 
             Args:
@@ -1287,7 +1313,7 @@ class Engine:
                 copymoveblack: kopio mustan siirtolistasta
                 copythreatwhite: kopio valkoisen uhkalistasta
                 copythreatblack: kopio mustan uhkalistasta
-            
+
             Returns:
                 palauttaa muokatut listat tuplena
         """
@@ -1308,15 +1334,16 @@ class Engine:
             thrt_white_indices = []
 
             for i in range(len(copythreatwhite)):
-                if copythreatwhite[i][1] == x and copythreatwhite[i][2] == y:             
+                if copythreatwhite[i][1] == x and copythreatwhite[i][2] == y:
                     thrt_white_indices.append(i)
 
             thrt_white_indices.sort(reverse=True)
 
             for index in thrt_white_indices:
                 copythreatwhite.pop(index)
-            
-            move_threat_tuple = self.generate_move_threat_all(dx,dy,abs(piecenmbr),True,board)
+
+            move_threat_tuple = self.generate_move_threat_all(
+                dx, dy, abs(piecenmbr), True, board)
             copymovewhite.extend(move_threat_tuple[0])
             copythreatwhite.extend(move_threat_tuple[1])
 
@@ -1324,11 +1351,12 @@ class Engine:
             copymoveblack = []
 
             copyallpos = self.piece_positions_all[:]
-            for item in copyallpos:  
-                if item[0] < 0:                    
-                    move_threat_tuple = self.generate_move_threat_all(item[1],item[2],abs(item[0]),False,board)
+            for item in copyallpos:
+                if item[0] < 0:
+                    move_threat_tuple = self.generate_move_threat_all(
+                        item[1], item[2], abs(item[0]), False, board)
                     copymoveblack.extend(move_threat_tuple[0])
-                    copythreatblack.extend(move_threat_tuple[1])  
+                    copythreatblack.extend(move_threat_tuple[1])
         else:
             mv_black_indices = []
 
@@ -1344,37 +1372,39 @@ class Engine:
             thrt_black_indices = []
 
             for i in range(len(copythreatblack)):
-                if copythreatblack[i][1] == x and copythreatblack[i][2] == y:             
+                if copythreatblack[i][1] == x and copythreatblack[i][2] == y:
                     thrt_black_indices.append(i)
 
             thrt_black_indices.sort(reverse=True)
 
             for index in thrt_black_indices:
                 copythreatblack.pop(index)
-            
-            move_threat_tuple = self.generate_move_threat_all(dx,dy,abs(piecenmbr),False,board)
+
+            move_threat_tuple = self.generate_move_threat_all(
+                dx, dy, abs(piecenmbr), False, board)
             copymoveblack.extend(move_threat_tuple[0])
             copythreatblack.extend(move_threat_tuple[1])
 
             copythreatwhite = []
             copymovewhite = []
-            
+
             copyallpos = self.piece_positions_all[:]
-            for item in copyallpos:                 
+            for item in copyallpos:
                 if item[0] > 0:
-                    move_threat_tuple = self.generate_move_threat_all(item[1],item[2],abs(item[0]),True,board)
+                    move_threat_tuple = self.generate_move_threat_all(
+                        item[1], item[2], abs(item[0]), True, board)
                     copymovewhite.extend(move_threat_tuple[0])
-                    copythreatwhite.extend(move_threat_tuple[1])       
+                    copythreatwhite.extend(move_threat_tuple[1])
 
         return copymovewhite, copymoveblack, copythreatwhite, copythreatblack
-        
+
     def heuristic_function(self, poslist, piece_eval):
         """Funktio, joka arvioi pelitilanteen heuristisen arvon bitmappien ja parametrina saadun evaluaation avulla.
 
             Args:
                 poslist: lista kaikkien nappuloiden sijainneista
                 piece_eval: pelaajien nappuloiden arvojen erotus
-            
+
             Returns:
                 Laskee kaikkien nappuloiden sijaintien arvot yhteen, lisää siihen piece_eval-arvon, ja palauttaa tämän summan
         """
@@ -1399,11 +1429,11 @@ class Engine:
             elif piece == -1:
                 summa += -self.pawn_pos_table[-(i+1)][-(j+1)]
             elif piece == -3:
-                summa += -self.knight_pos_table[-(i+1)][-(j+1)]    
+                summa += -self.knight_pos_table[-(i+1)][-(j+1)]
             elif piece == -4:
                 summa += -self.bishop_pos_table[-(i+1)][-(j+1)]
             elif piece == -5:
-                summa  += -self.rook_pos_table[-(i+1)][-(j+1)]
+                summa += -self.rook_pos_table[-(i+1)][-(j+1)]
             elif piece == -6:
                 no_queens = False
                 summa += -self.queen_pos_table[-(i+1)][-(j+1)]
@@ -1413,17 +1443,18 @@ class Engine:
             king_pos_table = self.king_pos_table_mid_game
 
         summa += king_pos_table[self.white_king_pos[0]][self.white_king_pos[1]]
-        summa += -king_pos_table[-(self.black_king_pos[0]+1)][-(self.black_king_pos[1]+1)]
+        summa += -king_pos_table[-(self.black_king_pos[0]+1)
+                                 ][-(self.black_king_pos[1]+1)]
 
         return summa+piece_eval
-    
+
     def sort_movelist(self, movelist, maximizing_player):
         """Funktio, joka järjestää siirtolistalla olevat siirrot siten, että paras siirto olisi mahdollisimman lähellä indeksiä 0.
 
             Args:
                 movelist: lista omista mahdollisista siirroista
                 maximizing_player: pelaaja
-            
+
             Returns:
                 palauttaa järjestetyn siirtolistan
         """
@@ -1432,7 +1463,7 @@ class Engine:
         indices = []
 
         if maximizing_player:
-            for i in range(len(movelist)):            
+            for i in range(len(movelist)):
                 for pos in self.piece_positions_all:
                     if pos[0] < 0 and movelist[i][3] == pos[1] and movelist[i][4] == pos[2]:
                         returning_list.append(movelist[i])
