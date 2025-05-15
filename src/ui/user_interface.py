@@ -28,7 +28,7 @@ class UI():
         self.load_tiles()
 
         self.height_and_width = len(self.peli.lauta)
-        self.scale = self.tiles[0].get_width()
+        self.scale = self.tiles[0].get_width()-5
         self.screen = pygame.display.set_mode((self.height_and_width*self.scale, self.height_and_width*self.scale))
         self.black_pieces = pygame.sprite.Group()
         self.white_pieces = pygame.sprite.Group()
