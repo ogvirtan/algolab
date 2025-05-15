@@ -19,7 +19,7 @@ Jos päästään pelitilanteeseen, jossa peli päättyy mattiin tai pattiin, fun
 Jos siirtolistassa on jäljellä käsittelemättömiä siirtoja, suoritetaan kohta 1 uudestaan seuraavalle siirrolle. Muuten jatketaan kohtaan 7</li>
 <li>Kaikki siirrot, ja siten myös kaikki mahdolliset pelipuut on käyty läpi, maksimoija pelaa sen siirron laudalle, jonka aiheuttama minimoitu ja maksimoitu pelipuu tuotti suurimman heuristisen arvon.</li></ol><br><br>
 
-![Algoritmin toiminnan kuvaus](./liitteet/Minmaxab.gif)
+![Algoritmin toiminnan kuvaus](./liitteet/Minmaxab.gif)<br>
 [linkki graafin alkuperäiselle sivulle](https://en.wikipedia.org/w/index.php?curid=23148439), auktorina Maschelos
 
 #### Siirtojen järjestäminen
