@@ -163,7 +163,7 @@ class UI():
 
     def downscale(self, position):
         return position//self.scale
-    
+
     def print_board(self):
         for row in self.peli.lauta:
             for item in row:
