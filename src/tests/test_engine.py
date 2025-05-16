@@ -10,6 +10,39 @@ class TestEngine (unittest.TestCase):
     def test_engine_exists(self):
         self.assertNotEqual(self.eng, None)
 
+    def test_sort_movelist_sorts_lists_correctly_black(self):
+        self.eng.peli.set_board([[-0, 0, 0, -3, -7, 0, 0, 0],
+                                [-1, 0, 0, -5, 0, 0, 0, 0],
+                                [0, 3, 0, 0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0, 0, 0, 0],
+                                [0, -4, 0, 0, 0, 0, 0, 0],
+                                [1, 1, 1, 1, 1, 1, 1, 1],
+                                [5, 0, 4, 6, 7, 4, 3, 5]])
+        self.eng.generate_supporting_lists()
+        new_movelist = self.eng.sort_movelist(self.eng.movelist_black,False)
+        only_piecenumbers = []
+        for item in new_movelist:
+            only_piecenumbers.append(item[0])
+        self.assertCountEqual(only_piecenumbers[:9],[-1,-4,-4,-5,-7,-7,-7,-5,-5])
+
+    def test_sort_movelist_sorts_lists_correctly_white(self):
+        self.eng.peli.set_board([[0,-3, 0, 3, 7, 0, 0, 0],
+                                [1, 0, 0, 5, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0, 0, 0, 0],
+                                [0, 4, 0, 0, 0, 0, 0, 0],
+                                [-1, -1, -1, -1, -1, -1, -1, -1],
+                                [-5, 0, -4, -6, -7, -4, -3, -5]])
+        self.eng.generate_supporting_lists()
+        new_movelist = self.eng.sort_movelist(self.eng.movelist_white,True)
+        only_piecenumbers = []
+        for item in new_movelist:
+            only_piecenumbers.append(item[0])
+        print(only_piecenumbers[:9])
+        self.assertCountEqual(only_piecenumbers[:9],[1,4,4,5,7,7,7,5,5])
+
     def test_alphabeta_returns_best_move(self):
         self.eng.peli.set_board([[-5, 0, -4, -6, -7, -4, -3, -5],
                                 [-1, -1, -1, -1, -1, -1, -1, -1],
