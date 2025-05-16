@@ -1,5 +1,5 @@
-import pygame
 import os
+import pygame
 from game.shakki import Shakki
 from entities.piece import Piece
 from services.engine import Engine

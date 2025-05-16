@@ -1,6 +1,5 @@
 import os
 import sys
-import copy
 from game.shakki import Shakki
 
 
