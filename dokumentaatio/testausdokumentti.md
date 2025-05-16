@@ -1,5 +1,8 @@
 # Testausdokumentti
 
+Testit voi ajaa komennolla: poetry run invoke test<br>
+Testiraportin voi luoda komennolla: poetry run invoke covreport
+
 ## Käyttöliittymä
 
 Käyttöliittymä on testattu manuaalisesti. Käyttäjä tai tekoäly eivät voi tehdä laittomia siirtoja. Peli päättyy halutusti pattiin ja mattiin, tai jos sama asema toistuu kolmesti. Sovelluksen ajaminen onnistuu käyttöohjeen mukaisesti.
