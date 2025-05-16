@@ -605,15 +605,6 @@ class Shakki:
             self.whitetomove = mover
         self.lauta = lauta
 
-    def print_board(self):
-        """Funktio, joka tulostaa laudan tilanteen käyttäjälle helppolukuisena. Lähinnä käytetty kehityksen aikana varmistamaan laudan tilanteen muuttuvan oikein.
-        """
-
-        for row in self.lauta:
-            for item in row:
-                print(item, end='\t')
-            print("\n")
-
     def get_board_as_FEN(self, board=[], mover=None):
         """Funktio, joka tulostaa laudan tilanteen merkkijonona jokseenkin FEN-muotoisena(Forsyth-Edwards Notation). Vain tälle projektille tarpeellinen informaatio on sisällytetty merkkijonoon.
             Funktiota käytetään vain toistuvan aseman tasapelitarkasteluun.

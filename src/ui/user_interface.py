@@ -98,7 +98,7 @@ class UI():
                         self.set_board()
                         break
                     if event.key == pygame.K_BACKSPACE:
-                        self.peli.print_board()
+                        self.print_board()
                         break
 
     def draw_board(self):
@@ -163,3 +163,9 @@ class UI():
 
     def downscale(self, position):
         return position//self.scale
+    
+    def print_board(self):
+        for row in self.peli.lauta:
+            for item in row:
+                print(item, end='\t')
+            print("\n")
