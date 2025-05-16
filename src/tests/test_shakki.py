@@ -202,10 +202,10 @@ class TestShakki(unittest.TestCase):
         self.assertEqual(self.peli.check_move_legality(3, 3, -1, 1), False)
 
     # kinght moves black
-    def test_knight_move_out_of_bounds_white(self):
+    def test_knight_move_out_of_bounds_black(self):
         self.peli.set_board([[0, 0, 0, 0, -7, 0, 0, 0],
                              [0, 0, 0, 0, 0, 0, 0, 0],
-                             [3, 0, 0, 0, 0, 0, 0, 0],
+                             [-3, 0, 0, 0, 0, 0, 0, 0],
                              [0, 0, 0, 0, 0, 0, 0, 0],
                              [0, 0, 0, 0, 0, 0, 0, 0],
                              [0, 0, 0, 0, 0, 0, 0, 0],
